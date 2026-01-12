@@ -22,13 +22,13 @@
       "desc": "授权方"
     },
     {
-      "name": "type",
+      "name": "status",
       "query": true,
       "type": "Integer",
       "desc": "状态",
       "fullDesc": "状态。1正常；-1已到期",
       "enumClass": true,
-      "ref": "@TypeEnum",
+      "ref": "@CopyStatusEnum",
       "refAttrs": [
         {
           "value": 1,
