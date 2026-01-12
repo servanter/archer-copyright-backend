@@ -52,6 +52,14 @@
                                                 <el-input v-model="searchForm.letterUrl" placeholder="请输入授权书" clearable />
                     </el-form-item>
 
+                    <el-form-item label="状态">
+                        <el-select v-model="searchForm.valid" placeholder="请选择状态" style="width:168px">
+                            <el-option v-for="item in validOptions" :key="item.value" :label="item.label"
+                                :value="item.value">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+
                     <el-form-item>
                         <el-button type="primary" @click="clickSearch">搜索</el-button>
                     </el-form-item>
@@ -72,6 +80,7 @@
             <el-table-column prop="topCategoryId" label="授权类目" />
             <el-table-column prop="clearDays" label="预留清货天数" />
             <el-table-column prop="letterUrl" label="授权书" />
+            <el-table-column prop="validStr" label="状态" />
             <el-table-column prop="createTime" label="创建时间" />
             <el-table-column prop="updateTime" label="修改时间" />            <el-table-column fixed="right" label="操作">
                 <template #default="scope">
@@ -140,6 +149,17 @@
                     </el-form-item>
                 </el-col>            </el-row>
 
+            <el-row>
+                <el-col :span="12">
+                    <el-form-item label="状态" prop="valid" :rules="[{ required: true, message: '状态是必填项' }]">
+                        <el-select v-model="submitForm.valid" placeholder="请选择状态" style="width:168px">
+                            <el-option v-for="item in validOptions" :key="item.value" :label="item.label"
+                                :value="item.value">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-col>            </el-row>
+
         </el-form>
         <template #footer>
             <div class="dialog-footer">
@@ -164,6 +184,7 @@ const config = reactive({
 
 // 枚举
 const statusOptions = ref([])
+const validOptions = ref([])
 
 // dialog展示控制
 const dialogVisible = ref(false)
@@ -177,7 +198,8 @@ const searchForm = reactive({
     expireTime: '',
     topCategoryId: '',
     clearDays: '',
-    letterUrl: ''})
+    letterUrl: '',
+    valid: ''})
 
 // table加载状态
 const loadStatus = ref(true)
@@ -199,7 +221,8 @@ async function queryCopyrightList() {
     loadStatus.value = false;
     copyrightList.value = data.list
     config.total = data.total
-statusOptions.value = data.statuss}
+statusOptions.value = data.statuss
+validOptions.value = data.valids}
 
 // 分页点击
 function handleClick(pageNo) {
@@ -222,7 +245,10 @@ function clickSearch() {
     if (searchForm.clearDays.toString().length > 0) {
         config.clearDays = searchForm.clearDays
     }
-    config.letterUrl = searchForm.letterUrl    queryCopyrightList()
+    config.letterUrl = searchForm.letterUrl
+    if (searchForm.valid.toString().length > 0) {
+        config.valid = searchForm.valid
+    }    queryCopyrightList()
 }
 
 // 弹窗 - 新增
@@ -253,6 +279,8 @@ async function clickEdit(item) {
         submitForm.clearDays = item.clearDays
 
         submitForm.letterUrl = item.letterUrl
+
+        submitForm.valid = item.valid
     });
 }
 
@@ -265,7 +293,8 @@ let submitForm = reactive({
     expireTime: '',
     topCategoryId: '',
     clearDays: '',
-    letterUrl: ''})
+    letterUrl: '',
+    valid: ''})
 
 // 提交 - 新增/修改
 async function onSubmit() {

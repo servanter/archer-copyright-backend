@@ -8,5 +8,6 @@ CREATE TABLE `copyright` (
 `top_category_id` int(11) NOT NULL DEFAULT 0 COMMENT '授权类目',
 `clear_days` int(11) NOT NULL DEFAULT 0 COMMENT '预留清货天数',
 `letter_url` varchar(500) NOT NULL DEFAULT '' COMMENT '授权书',
+`valid` int(11) NOT NULL DEFAULT 1 COMMENT '状态',
 `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
 `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4

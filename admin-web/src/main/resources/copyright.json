@@ -69,6 +69,14 @@
       "desc": "授权书"
     },
     {
+      "name": "valid",
+      "query": true,
+      "type": "Integer",
+      "desc": "状态",
+      "enumClass": true,
+      "ref": "@com.archer.admin.web.common.ValidEnum"
+    },
+    {
       "name": "createTime",
       "type": "LocalDateTime",
       "desc": "创建时间"
