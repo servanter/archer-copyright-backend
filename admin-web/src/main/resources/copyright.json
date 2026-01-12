@@ -1,0 +1,82 @@
+{
+  "name": "Copyright",
+  "tableName": "copyright",
+  "desc": "IP",
+  "fields": [
+    {
+      "name": "id",
+      "type": "Integer",
+      "primary": true,
+      "desc": "ID"
+    },
+    {
+      "name": "copyrightName",
+      "type": "String",
+      "query": true,
+      "desc": "IP名称"
+    },
+    {
+      "name": "cpName",
+      "query": true,
+      "type": "String",
+      "desc": "授权方"
+    },
+    {
+      "name": "type",
+      "query": true,
+      "type": "Integer",
+      "desc": "状态",
+      "fullDesc": "状态。1正常；-1已到期",
+      "enumClass": true,
+      "ref": "@TypeEnum",
+      "refAttrs": [
+        {
+          "value": 1,
+          "desc": "VALID",
+          "label": "正常"
+        },
+        {
+          "value": -1,
+          "desc": "EXPIRE",
+          "label": "已到期"
+        }
+      ]
+    },
+    {
+      "name": "placardUrl",
+      "query": true,
+      "type": "String",
+      "desc": "IP海报"
+    },
+    {
+      "name": "expireTime",
+      "type": "LocalDateTime",
+      "desc": "授权到期时间"
+    },
+    {
+      "name": "topCategoryId",
+      "type": "Integer",
+      "desc": "授权类目"
+    },
+    {
+      "name": "clearDays",
+      "type": "Integer",
+      "desc": "预留清货天数"
+    },
+    {
+      "name": "letterUrl",
+      "type": "String",
+      "desc": "授权书"
+    },
+    {
+      "name": "createTime",
+      "type": "LocalDateTime",
+      "desc": "创建时间"
+    },
+    {
+      "name": "updateTime",
+      "type": "LocalDateTime",
+      "desc": "修改时间"
+    }
+  ]
+}
