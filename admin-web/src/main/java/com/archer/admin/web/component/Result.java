@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 public class Result<T> {
 
     private static final Result ERROR = new Result(-99999, "出错啦，请稍后重试", "");
+    public static final Result TOKEN_EXPIRED = new Result(-99991, "请重新登录", "");
     private static final Result SUCCESS = new Result(0, "success", "");
 
     private int code;
@@ -32,6 +33,10 @@ public class Result<T> {
 
     public static Result error() {
         return ERROR;
+    }
+
+    public static Result error(int code, String msg) {
+        return new Result(code, msg, "");
     }
 
     public static Result errorMsg(String msg) {

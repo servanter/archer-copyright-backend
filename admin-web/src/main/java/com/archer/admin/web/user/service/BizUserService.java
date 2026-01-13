@@ -7,11 +7,12 @@ import com.archer.admin.web.user.entities.UserTransform.UserQueryReq;
 import com.archer.admin.web.user.entities.UserTransform.UserQueryRes;
 import com.archer.admin.web.user.entities.UserTransform.UserRes;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import java.util.List;
-import java.util.stream.Collectors;
-import javax.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class BizUserService {
@@ -32,7 +33,7 @@ public class BizUserService {
                 
 .like(StringUtils.isNotBlank(userQueryReq.getUserName()), User::getUserName, userQueryReq.getUserName())
 .like(StringUtils.isNotBlank(userQueryReq.getPassword()), User::getPassword, userQueryReq.getPassword())
-.eq(userQueryReq.getValid() != 0, User::getValid, userQueryReq.getValid())
+.eq(User::getValid, 1)
 .eq(userQueryReq.getType() != 0, User::getType, userQueryReq.getType())
 
                 .page(new Page<>(userQueryReq.getPageNo(), userQueryReq.getPageSize()));

@@ -8,17 +8,15 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("menu")
-public class Menu {
+@TableName("news")
+public class News {
     @TableId(type = IdType.AUTO)
         // ID
         private Integer id;
-        // 菜单名称
-        private String name;
-        // 父级菜单ID
-        private Integer parentId;
-        // 跳转地址
-        private String url;
+        // 标题
+        private String title;
+        // 内容
+        private String content;
         // 操作人
         private Integer operatorId;
         // 状态

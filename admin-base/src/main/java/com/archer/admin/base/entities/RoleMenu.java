@@ -3,14 +3,15 @@ package com.archer.admin.base.entities;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.time.LocalDateTime;
 import lombok.Data;
+
+import java.time.LocalDateTime;
 
 @Data
 @TableName("role_menu")
 public class RoleMenu {
     @TableId(type = IdType.AUTO)
-        
+        // ID
         private Integer id;
         // 角色ID
         private Integer roleId;

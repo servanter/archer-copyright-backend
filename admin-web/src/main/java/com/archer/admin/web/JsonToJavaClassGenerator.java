@@ -5,21 +5,16 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 import lombok.Data;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.ibatis.annotations.ConstructorArgs;
+
+import java.io.*;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class JsonToJavaClassGenerator {
@@ -252,6 +247,7 @@ public class JsonToJavaClassGenerator {
             + "import org.springframework.web.bind.annotation.RequestMethod;\n"
             + "import org.springframework.web.bind.annotation.RestController;\n"
             + "import com.archer.admin.web.component.ResponseResultBody;\n"
+            + "import com.archer.admin.web.component.WebContext;\n"
             + "\n"
             + "@RequestMapping(\"/{1}\")\n"
             + "@RestController\n"
@@ -262,27 +258,27 @@ public class JsonToJavaClassGenerator {
             + "    private Biz{2}Service biz{2}Service;\n"
             + "\n"
             + "    @RequestMapping(\"/detail/'{'{1}Id'}'\")\n"
-            + "    public {2}Res detail(@PathVariable(\"{1}Id\") int {1}Id) '{'\n"
+            + "    public {2}Res detail(WebContext webContext, @PathVariable(\"{1}Id\") int {1}Id) '{'\n"
             + "        return biz{2}Service.query({1}Id);\n"
             + "    '}'\n"
             + "\n"
             + "    @RequestMapping(value = \"/modify\", method = RequestMethod.POST)\n"
-            + "    public Result modify(@RequestBody {2} {1}) '{'\n"
+            + "    public Result modify(WebContext webContext, @RequestBody {2} {1}) '{'\n"
             + "        return biz{2}Service.modify({1});\n"
             + "    '}'\n"
             + "\n"
             + "    @RequestMapping(\"/list\")\n"
-            + "    public {2}QueryRes list({2}QueryReq {1}QueryReq) '{'\n"
+            + "    public {2}QueryRes list(WebContext webContext, {2}QueryReq {1}QueryReq) '{'\n"
             + "        return biz{2}Service.list({1}QueryReq);\n"
             + "    '}'\n"
             + "\n"
             + "    @RequestMapping(\"/remove\")\n"
-            + "    public Result remove(int id) '{'\n"
+            + "    public Result remove(WebContext webContext, int id) '{'\n"
             + "        return biz{2}Service.remove(id);\n"
             + "    '}'\n"
             + "\n"
             + "    @RequestMapping(value = \"/add\", method = RequestMethod.POST)\n"
-            + "    public Result add(@RequestBody {2} {1}) '{'\n"
+            + "    public Result add(WebContext webContext, @RequestBody {2} {1}) '{'\n"
             + "        return biz{2}Service.save({1});\n"
             + "    '}'\n"
             + "}\n";
@@ -304,7 +300,7 @@ public class JsonToJavaClassGenerator {
             + "@Getter\n"
             + "public enum {2} '{'\n"
             + "\n"
-            + "    EMPTY(0, \"\"),\n"
+            + "    EMPTY(0, \"全部\"),\n"
             + "    {3}"
             + "    ;\n"
             + "\n"
@@ -380,7 +376,7 @@ public class JsonToJavaClassGenerator {
             + "            @current-change=\"handleClick\" />\n"
             + "    </div>\n"
             + "\n"
-            + "    <el-dialog v-model=\"dialogVisible\" :title=\"action === ''add'' ? ''新增{3}'' : ''编辑{3}''\" draggable=\"true\" width=\"650\">\n"
+            + "    <el-dialog v-model=\"dialogVisible\" :title=\"action === ''add'' ? ''新增{3}'' : ''编辑{3}''\" draggable width=\"650\">\n"
             + "        <el-form :inline=\"true\" :model=\"submitForm\" ref=\"form\">\n"
             + "{4}"
             + "        </el-form>\n"
@@ -603,7 +599,8 @@ public class JsonToJavaClassGenerator {
     }
 
     private static void generateVue(GenerationParams params, Struct struct) throws IOException{
-        List<StructAttr> formFields = struct.getFields().stream().filter(JsonToJavaClassGenerator::isFormField)
+        List<StructAttr> formFields = struct.getFields().stream()
+                .filter(JsonToJavaClassGenerator::isFormField)
                 .collect(Collectors.toList());
 
         // 提交框 - 默认值
@@ -630,13 +627,13 @@ public class JsonToJavaClassGenerator {
         // 枚举 - 初始化
         String enumInitTemplate = formFields.stream()
                 .filter(StructAttr::isEnumClass)
-                .map(attr-> "const "+ attr.getName() + "Options = ref([])")
+                .map(attr-> "const "+ attr.getName() + "Options = ref([])\nconst " + attr.getName() + "SubmitOptions = ref([])" )
                 .collect(Collectors.joining("\n"));
 
         // 枚举 - 赋值
         String enumAssignTemplate = formFields.stream()
                 .filter(StructAttr::isEnumClass)
-                .map(attr-> attr.getName() + "Options.value = data." + attr.getName() + "s")
+                .map(attr-> attr.getName() + "Options.value = data." + attr.getName() + "s\n" + attr.getName() + "SubmitOptions.value = data." + attr.getName() + "s.filter(x=>x.value !== 0)")
                 .collect(Collectors.joining("\n"));
 
         // 搜索框
@@ -693,7 +690,7 @@ public class JsonToJavaClassGenerator {
             return MessageFormat.format("                <el-col :span=\"12\">\n"
                     + "                    <el-form-item label=\"{0}\" prop=\"{1}\" :rules=\"['{' required: true, message: ''{0}是必填项'' '}']\">\n"
                     + "                        <el-select v-model=\"submitForm.{1}\" placeholder=\"请选择{0}\" style=\"width:168px\">\n"
-                    + "                            <el-option v-for=\"item in {1}Options\" :key=\"item.value\" :label=\"item.label\"\n"
+                    + "                            <el-option v-for=\"item in {1}SubmitOptions\" :key=\"item.value\" :label=\"item.label\"\n"
                     + "                                :value=\"item.value\">\n"
                     + "                            </el-option>\n"
                     + "                        </el-select>\n"
@@ -740,12 +737,13 @@ public class JsonToJavaClassGenerator {
                     + "        config.{0} = searchForm.{0}\n"
                     + "    '}'", structAttr.getName());
         }
-        return MessageFormat.format("    config.{0} = searchForm.{0}", structAttr.getName());
+        return MessageFormat.format("    config.{0} = searchForm.{0}\n", structAttr.getName());
     }
 
     private static boolean isFormField(StructAttr structAttr) {
         return !structAttr.getName().equals("operatorId") && !structAttr.getName().equals("id")
-                && !structAttr.getName().equals("createTime") && !structAttr.getName().equals("updateTime");
+                && !structAttr.getName().equals("createTime") && !structAttr.getName().equals("updateTime")
+                && !structAttr.getName().equals("valid");
     }
 
     private static void generateSQL(GenerationParams params, Struct struct) throws IOException {
@@ -830,7 +828,11 @@ public class JsonToJavaClassGenerator {
         if (!structAttr.isQuery()) {
             return "";
         }
-        if (structAttr.getType().equals("int") || structAttr.getType().equals("Integer")) {
+
+        // 生效中
+        if (structAttr.isEnumClass() && structAttr.getName().equals("valid")) {
+            return MessageFormat.format(".eq({0}::get" + toUpperCamelCase(structAttr.getName()) + ", 1)", struct.getName());
+        } else if (structAttr.getType().equals("int") || structAttr.getType().equals("Integer")) {
             return MessageFormat.format(".eq({0}QueryReq." + toGetMethod(structAttr.getName()) + " != 0, {1}::get" + toUpperCamelCase(structAttr.getName()) + ", {0}QueryReq." + toGetMethod(structAttr.getName()) + ")", struct.getTableName(), struct.getName());
         } else if (structAttr.getType().equals("String")) {
             // .like(StringUtils.isNotBlank(userQueryReq.getUserName()), User::getUserName, userQueryReq.getUserName())
@@ -1090,11 +1092,12 @@ public class JsonToJavaClassGenerator {
         try {
             String currentPath = System.getProperty("user.dir");
             System.out.println(currentPath);
-//            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/menu.json", params);
-//            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/role_menu.json", params);
-//            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/user_role.json", params);
-            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/copyright.json", params);
-//            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/role.json", params);
+            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/menu.json", params);
+            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/role_menu.json", params);
+            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/user_role.json", params);
+            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/user.json", params);
+            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/role.json", params);
+            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/news.json", params);
             System.out.println("Java class generated successfully!");
         } catch (IOException e) {
             System.out.println("Error generating Java class: " + e.getMessage());

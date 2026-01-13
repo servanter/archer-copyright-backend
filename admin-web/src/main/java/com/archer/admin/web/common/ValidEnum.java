@@ -1,12 +1,13 @@
 package com.archer.admin.web.common;
 
+import lombok.Getter;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import lombok.Getter;
 
 @Getter
 public enum ValidEnum {

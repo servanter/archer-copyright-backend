@@ -1,8 +1,8 @@
-package com.archer.admin.web.role.entities;
+package com.archer.admin.web.news.entities;
 
 import com.archer.admin.base.common.Page.PageReq;
 import com.archer.admin.base.common.Page.PageRes;
-import com.archer.admin.base.entities.Role;
+import com.archer.admin.base.entities.News;
 import com.archer.admin.web.common.ValidEnum;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -14,18 +14,21 @@ import lombok.experimental.SuperBuilder;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public class RoleTransform {
+public class NewsTransform {
  
     @Getter
     @Builder
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class RoleRes {
+    public static class NewsRes {
         // ID
 
         private Integer id;
-        // 角色名称
+        // 标题
 
-        private String name;
+        private String title;
+        // 内容
+
+        private String content;
         // 操作人
 
         private Integer operatorId;
@@ -39,14 +42,15 @@ public class RoleTransform {
 @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
         private LocalDateTime updateTime;
 
-    public static RoleRes parseRes(Role role) {
-return RoleRes.builder()
-        .id(role.getId())
-.name(role.getName())
-.operatorId(role.getOperatorId())
-.valid(role.getValid())
-.createTime(role.getCreateTime())
-.updateTime(role.getUpdateTime())
+    public static NewsRes parseRes(News news) {
+return NewsRes.builder()
+        .id(news.getId())
+.title(news.getTitle())
+.content(news.getContent())
+.operatorId(news.getOperatorId())
+.valid(news.getValid())
+.createTime(news.getCreateTime())
+.updateTime(news.getUpdateTime())
         .build();
 
     }
@@ -56,32 +60,21 @@ public String getValidStr() {
     }
 
     @Data
-public static class RoleQueryReq extends PageReq {
+public static class NewsQueryReq extends PageReq {
             
-        private String name;
+        private String title;
+            
+        private String content;
             
         private int operatorId;
             
         private int valid;
     }
 
-    @Data
-    public static class UserRoleSetting {
-        private int userId;
-        private List<Integer> roleIds;
-        private int operatorId;
-    }
     @SuperBuilder
 @Getter
-public static class RoleQueryRes extends PageRes {
-    private List<RoleRes> list;
+public static class NewsQueryRes extends PageRes {
+    private List<NewsRes> list;
   
-  }
-
-  @Getter
-  @Builder
-  public static class RoleUserRes {
-      private List<RoleRes> curRoles;
-      private List<RoleRes> allRoles;
-  }
+  } 
 }

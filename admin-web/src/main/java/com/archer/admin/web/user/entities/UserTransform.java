@@ -4,16 +4,17 @@ import com.archer.admin.base.common.Page.PageReq;
 import com.archer.admin.base.common.Page.PageRes;
 import com.archer.admin.base.entities.User;
 import com.archer.admin.web.common.ValidEnum;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.Data;
+import lombok.Getter;
+import lombok.experimental.SuperBuilder;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Builder.Default;
-import lombok.experimental.SuperBuilder;
 
 public class UserTransform {
  
@@ -30,10 +31,10 @@ public class UserTransform {
         // 密码
 
         private String password;
-        // 是否可用。1可用；-1失效
+        // 状态
 
         private Integer valid;
-        // 用户类型。1普通用户；2管理员
+        // 用户类型
 
         private Integer type;
         // 创建时间
