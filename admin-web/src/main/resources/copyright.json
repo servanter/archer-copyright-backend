@@ -28,7 +28,7 @@
       "desc": "状态",
       "fullDesc": "状态。1正常；-1已到期",
       "enumClass": true,
-      "ref": "@CopyStatusEnum",
+      "ref": "@StatusEnum",
       "refAttrs": [
         {
           "value": 1,
@@ -44,7 +44,7 @@
     },
     {
       "name": "placardUrl",
-      "query": true,
+      "query": false,
       "type": "String",
       "desc": "IP海报"
     },
@@ -70,7 +70,7 @@
     },
     {
       "name": "valid",
-      "query": true,
+      "query": false,
       "type": "Integer",
       "desc": "状态",
       "enumClass": true,

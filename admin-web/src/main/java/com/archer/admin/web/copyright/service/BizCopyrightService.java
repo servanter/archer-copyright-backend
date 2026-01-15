@@ -33,12 +33,12 @@ public class BizCopyrightService {
 .like(StringUtils.isNotBlank(copyrightQueryReq.getCopyrightName()), Copyright::getCopyrightName, copyrightQueryReq.getCopyrightName())
 .like(StringUtils.isNotBlank(copyrightQueryReq.getCpName()), Copyright::getCpName, copyrightQueryReq.getCpName())
 .eq(copyrightQueryReq.getStatus() != 0, Copyright::getStatus, copyrightQueryReq.getStatus())
-.like(StringUtils.isNotBlank(copyrightQueryReq.getPlacardUrl()), Copyright::getPlacardUrl, copyrightQueryReq.getPlacardUrl())
 
 
 
 
-.eq(copyrightQueryReq.getValid() != 0, Copyright::getValid, copyrightQueryReq.getValid())
+
+
 
                 .page(new Page<>(copyrightQueryReq.getPageNo(), copyrightQueryReq.getPageSize()));
 

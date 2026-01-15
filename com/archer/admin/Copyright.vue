@@ -1,30 +1,17 @@
 <template>
-    <div class="header">
-        <el-form :inline="true" :model="searchForm">
-            <el-row>
-                <el-col :span="3">
-                    <el-button type="info" color="#40485b" @click="queryCopyrightList()">
-                        <el-icon size="16">
-                            <Refresh />
-                        </el-icon>
-                    </el-button>
-                    <el-button type="success" @click="handleAdd">
-                        <el-icon size="16">
-                            <Plus />
-                        </el-icon>
-                        <span>新增</span>
-                    </el-button>
-                </el-col>
-                <el-col :span="21" style="text-align: right;">
-                    <el-form-item label="IP名称">
+    <div>
+        <el-form :inline="true" :model="searchForm" class="search-form">
+        <el-row class="shadow-md p-4 bg-white" >
+                <el-col :span="22" >
+                                        <el-form-item label="IP名称" label-width="100px">
                                                 <el-input v-model="searchForm.copyrightName" placeholder="请输入IP名称" clearable />
                     </el-form-item>
 
-                    <el-form-item label="授权方">
+                    <el-form-item label="授权方" label-width="100px">
                                                 <el-input v-model="searchForm.cpName" placeholder="请输入授权方" clearable />
                     </el-form-item>
 
-                    <el-form-item label="状态">
+                    <el-form-item label="状态" label-width="100px">
                         <el-select v-model="searchForm.status" placeholder="请选择状态" style="width:168px">
                             <el-option v-for="item in statusOptions" :key="item.value" :label="item.label"
                                 :value="item.value">
@@ -32,46 +19,42 @@
                         </el-select>
                     </el-form-item>
 
-                    <el-form-item label="IP海报">
-                                                <el-input v-model="searchForm.placardUrl" placeholder="请输入IP海报" clearable />
-                    </el-form-item>
 
-                    <el-form-item label="授权到期时间">
-                                                <el-input v-model="searchForm.expireTime" placeholder="请输入授权到期时间" clearable />
-                    </el-form-item>
 
-                    <el-form-item label="授权类目">
-                                                <el-input v-model="searchForm.topCategoryId" placeholder="请输入授权类目" clearable />
-                    </el-form-item>
 
-                    <el-form-item label="预留清货天数">
-                                                <el-input v-model="searchForm.clearDays" placeholder="请输入预留清货天数" clearable />
-                    </el-form-item>
 
-                    <el-form-item label="授权书">
-                                                <el-input v-model="searchForm.letterUrl" placeholder="请输入授权书" clearable />
-                    </el-form-item>
-
-                    <el-form-item label="状态">
-                        <el-select v-model="searchForm.valid" placeholder="请选择状态" style="width:168px">
-                            <el-option v-for="item in validOptions" :key="item.value" :label="item.label"
-                                :value="item.value">
-                            </el-option>
-                        </el-select>
-                    </el-form-item>
-
-                    <el-form-item>
-                        <el-button type="primary" @click="clickSearch">搜索</el-button>
-                    </el-form-item>
+                     
                 </el-col>
-            </el-row>
+                <el-col :span="2">
+                    <div class="flex justify-end">
+                        <el-button type="primary" @click="clickSearch">搜索</el-button>
+                    </div>
+                </el-col>
+        </el-row>
         </el-form>
     </div>
 
 
-    <div class="table">
+    <div class="w-full mt-4 bg-white shadow-md px-4 pb-4">
+    <div class="mb-2 flex justify-start items-center h-12"> 
+               <el-button type="success" @click="handleAdd">
+            <el-icon size="16">
+                <Plus />
+            </el-icon>
+            <span>新增</span>
+        </el-button>
+        
+            </div>
         <el-table :data="copyrightList" style="width: 100%" v-loading="loadStatus" empty-text="没有更多了~" border>
-            <el-table-column prop="id" label="ID" />
+         <div class="mb-2 flex justify-start items-center h-12"> 
+               <el-button type="success" @click="handleAdd">
+                   <el-icon size="16">
+                    <Plus />
+                   </el-icon>
+                   <span>新增</span>
+               </el-button>
+        
+            </div>            <el-table-column prop="id" label="ID" />
             <el-table-column prop="copyrightName" label="IP名称" />
             <el-table-column prop="cpName" label="授权方" />
             <el-table-column prop="statusStr" label="状态" />
@@ -91,11 +74,11 @@
                 </template>
             </el-table-column>
         </el-table>
-        <el-pagination background class="pager" layout="prev, pager, next" :total="config.total"
+        <el-pagination background class="mt-4 w-full flex justify-end" layout="prev, pager, next" :total="config.total"
             @current-change="handleClick" />
     </div>
 
-    <el-dialog v-model="dialogVisible" :title="action === 'add' ? '新增IP' : '编辑IP'" draggable="true" width="650">
+    <el-dialog v-model="dialogVisible" :title="action === 'add' ? '新增IP' : '编辑IP'" draggable width="650">
         <el-form :inline="true" :model="submitForm" ref="form">
             <el-row>
                 <el-col :span="12">
@@ -113,7 +96,7 @@
                 <el-col :span="12">
                     <el-form-item label="状态" prop="status" :rules="[{ required: true, message: '状态是必填项' }]">
                         <el-select v-model="submitForm.status" placeholder="请选择状态" style="width:168px">
-                            <el-option v-for="item in statusOptions" :key="item.value" :label="item.label"
+                            <el-option v-for="item in statusSubmitOptions" :key="item.value" :label="item.label"
                                 :value="item.value">
                             </el-option>
                         </el-select>
@@ -149,17 +132,6 @@
                     </el-form-item>
                 </el-col>            </el-row>
 
-            <el-row>
-                <el-col :span="12">
-                    <el-form-item label="状态" prop="valid" :rules="[{ required: true, message: '状态是必填项' }]">
-                        <el-select v-model="submitForm.valid" placeholder="请选择状态" style="width:168px">
-                            <el-option v-for="item in validOptions" :key="item.value" :label="item.label"
-                                :value="item.value">
-                            </el-option>
-                        </el-select>
-                    </el-form-item>
-                </el-col>            </el-row>
-
         </el-form>
         <template #footer>
             <div class="dialog-footer">
@@ -184,7 +156,7 @@ const config = reactive({
 
 // 枚举
 const statusOptions = ref([])
-const validOptions = ref([])
+const statusSubmitOptions = ref([])
 
 // dialog展示控制
 const dialogVisible = ref(false)
@@ -198,8 +170,7 @@ const searchForm = reactive({
     expireTime: '',
     topCategoryId: '',
     clearDays: '',
-    letterUrl: '',
-    valid: ''})
+    letterUrl: ''})
 
 // table加载状态
 const loadStatus = ref(true)
@@ -222,7 +193,7 @@ async function queryCopyrightList() {
     copyrightList.value = data.list
     config.total = data.total
 statusOptions.value = data.statuss
-validOptions.value = data.valids}
+statusSubmitOptions.value = data.statuss.filter(x=>x.value !== 0)}
 
 // 分页点击
 function handleClick(pageNo) {
@@ -233,12 +204,16 @@ function handleClick(pageNo) {
 // 搜索点击
 function clickSearch() {
     config.copyrightName = searchForm.copyrightName
+
     config.cpName = searchForm.cpName
+
     if (searchForm.status.toString().length > 0) {
         config.status = searchForm.status
     }
     config.placardUrl = searchForm.placardUrl
+
     config.expireTime = searchForm.expireTime
+
     if (searchForm.topCategoryId.toString().length > 0) {
         config.topCategoryId = searchForm.topCategoryId
     }
@@ -246,9 +221,7 @@ function clickSearch() {
         config.clearDays = searchForm.clearDays
     }
     config.letterUrl = searchForm.letterUrl
-    if (searchForm.valid.toString().length > 0) {
-        config.valid = searchForm.valid
-    }    queryCopyrightList()
+    queryCopyrightList()
 }
 
 // 弹窗 - 新增
@@ -279,8 +252,6 @@ async function clickEdit(item) {
         submitForm.clearDays = item.clearDays
 
         submitForm.letterUrl = item.letterUrl
-
-        submitForm.valid = item.valid
     });
 }
 
@@ -293,8 +264,7 @@ let submitForm = reactive({
     expireTime: '',
     topCategoryId: '',
     clearDays: '',
-    letterUrl: '',
-    valid: ''})
+    letterUrl: ''})
 
 // 提交 - 新增/修改
 async function onSubmit() {

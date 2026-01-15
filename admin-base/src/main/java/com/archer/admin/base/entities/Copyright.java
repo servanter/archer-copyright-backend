@@ -3,6 +3,8 @@ package com.archer.admin.base.entities;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.time.LocalDateTime;
 import lombok.Data;
 
@@ -21,7 +23,8 @@ public class Copyright {
         // IP海报
         private String placardUrl;
         // 授权到期时间
-        private LocalDateTime expireTime;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime expireTime;
         // 授权类目
         private Integer topCategoryId;
         // 预留清货天数
@@ -31,6 +34,7 @@ public class Copyright {
         // 状态
         private Integer valid;
         // 创建时间
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
         private LocalDateTime createTime;
         // 修改时间
         private LocalDateTime updateTime;

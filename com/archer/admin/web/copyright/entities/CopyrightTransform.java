@@ -76,7 +76,7 @@ return CopyrightRes.builder()
 
     }
 public String getStatusStr() { 
- return CopyStatusEnum.of(status).getLabel(); 
+ return StatusEnum.of(status).getLabel(); 
 }
 
 public String getValidStr() { 
@@ -92,10 +92,6 @@ public static class CopyrightQueryReq extends PageReq {
         private String cpName;
             
         private int status;
-            
-        private String placardUrl;
-            
-        private int valid;
     }
 
     @SuperBuilder
@@ -103,6 +99,6 @@ public static class CopyrightQueryReq extends PageReq {
 public static class CopyrightQueryRes extends PageRes {
     private List<CopyrightRes> list;
   @Default
-private List<Map<String, Object>> copyStatuss = CopyStatusEnum.TOTALS;
+private List<Map<String, Object>> statuss = StatusEnum.TOTALS;
   } 
 }

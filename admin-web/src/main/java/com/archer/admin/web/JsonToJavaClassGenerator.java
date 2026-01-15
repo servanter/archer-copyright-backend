@@ -332,37 +332,45 @@ public class JsonToJavaClassGenerator {
             + "'}'";
 
     private static final String VUE_TEMPLATE = "<template>\n"
-            + "    <div class=\"header\">\n"
-            + "        <el-form :inline=\"true\" :model=\"searchForm\">\n"
-            + "            <el-row>\n"
-            + "                <el-col :span=\"3\">\n"
-            + "                    <el-button type=\"info\" color=\"#40485b\" @click=\"query{0}List()\">\n"
-            + "                        <el-icon size=\"16\">\n"
-            + "                            <Refresh />\n"
-            + "                        </el-icon>\n"
-            + "                    </el-button>\n"
-            + "                    <el-button type=\"success\" @click=\"handleAdd\">\n"
-            + "                        <el-icon size=\"16\">\n"
-            + "                            <Plus />\n"
-            + "                        </el-icon>\n"
-            + "                        <span>新增</span>\n"
-            + "                    </el-button>\n"
-            + "                </el-col>\n"
-            + "                <el-col :span=\"21\" style=\"text-align: right;\">\n"
-            + "{1}"
-            + "\n"
-            + "                    <el-form-item>\n"
-            + "                        <el-button type=\"primary\" @click=\"clickSearch\">搜索</el-button>\n"
-            + "                    </el-form-item>\n"
-            + "                </el-col>\n"
-            + "            </el-row>\n"
-            + "        </el-form>\n"
+            + "    <div>\n"
+            + "        <el-form :inline=\"true\" :model=\"searchForm\" class=\"search-form\">\n" +
+            "        <el-row class=\"shadow-md p-4 bg-white\" >\n" +
+            "                <el-col :span=\"22\" >\n" +
+            "                    {1} " +
+            "                    \n" +
+            "                </el-col>\n" +
+            "                <el-col :span=\"2\">\n" +
+            "                    <div class=\"flex justify-end\">\n" +
+            "                        <el-button type=\"primary\" @click=\"clickSearch\">搜索</el-button>\n" +
+            "                    </div>\n" +
+            "                </el-col>\n" +
+            "        </el-row>\n" +
+            "        </el-form>\n"
             + "    </div>\n"
             + "\n"
             + "\n"
-            + "    <div class=\"table\">\n"
+            + "    <div class=\"w-full mt-4 bg-white shadow-md px-4 pb-4\">\n"
+            + "    <div class=\"mb-2 flex justify-start items-center h-12\"> \n" +
+            "               <el-button type=\"success\" @click=\"handleAdd\">\n" +
+            "            <el-icon size=\"16\">\n" +
+            "                <Plus />\n" +
+            "            </el-icon>\n" +
+            "            <span>新增</span>\n" +
+            "        </el-button>\n" +
+            "        \n" +
+            "            </div>\n"
             + "        <el-table :data=\"{11}List\" style=\"width: 100%\" v-loading=\"loadStatus\" empty-text=\"没有更多了~\" border>\n"
+            + "         <div class=\"mb-2 flex justify-start items-center h-12\"> \n" +
+            "               <el-button type=\"success\" @click=\"handleAdd\">\n" +
+            "                   <el-icon size=\"16\">\n" +
+            "                    <Plus />\n" +
+            "                   </el-icon>\n" +
+            "                   <span>新增</span>\n" +
+            "               </el-button>\n" +
+            "        \n" +
+            "            </div>"
             + "{2}"
+
             + "            <el-table-column fixed=\"right\" label=\"操作\">\n"
             + "                <template #default=\"scope\">\n"
             + "                    <el-button type=\"primary\" size=\"small\" @click=\"clickEdit(scope.row)\">\n"
@@ -372,7 +380,7 @@ public class JsonToJavaClassGenerator {
             + "                </template>\n"
             + "            </el-table-column>\n"
             + "        </el-table>\n"
-            + "        <el-pagination background class=\"pager\" layout=\"prev, pager, next\" :total=\"config.total\"\n"
+            + "        <el-pagination background class=\"mt-4 w-full flex justify-end\" layout=\"prev, pager, next\" :total=\"config.total\"\n"
             + "            @current-change=\"handleClick\" />\n"
             + "    </div>\n"
             + "\n"
@@ -674,7 +682,10 @@ public class JsonToJavaClassGenerator {
     }
 
     private static String submitFormVue(List<StructAttr> formFields, Struct struct) {
-        List<List<StructAttr>> partition = Lists.partition(formFields, 2);
+        List<StructAttr> baseStructAttrs = formFields.stream()
+                .filter(structAttr -> !structAttr.getName().equals("valid"))
+                .collect(Collectors.toList());
+        List<List<StructAttr>> partition = Lists.partition(baseStructAttrs, 2);
         StringBuilder builder = new StringBuilder();
         for (List<StructAttr> structAttrs : partition) {
             String row = "            <el-row>\n{0}            </el-row>\n";
@@ -712,7 +723,10 @@ public class JsonToJavaClassGenerator {
     }
 
     private static String searchForm0(StructAttr structAttr) {
-        String template = "                    <el-form-item label=\"{0}\">\n"
+        if(!structAttr.isQuery()) {
+            return "";
+        }
+        String template = "                    <el-form-item label=\"{0}\" label-width=\"100px\">\n"
                 + "                        {1}"
                 + "                    </el-form-item>\n";
         String text = "";
@@ -1092,12 +1106,12 @@ public class JsonToJavaClassGenerator {
         try {
             String currentPath = System.getProperty("user.dir");
             System.out.println(currentPath);
-            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/menu.json", params);
-            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/role_menu.json", params);
-            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/user_role.json", params);
-            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/user.json", params);
-            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/role.json", params);
-            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/news.json", params);
+//            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/menu.json", params);
+//            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/role_menu.json", params);
+//            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/user_role.json", params);
+//            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/user.json", params);
+//            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/role.json", params);
+            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/copyright.json", params);
             System.out.println("Java class generated successfully!");
         } catch (IOException e) {
             System.out.println("Error generating Java class: " + e.getMessage());

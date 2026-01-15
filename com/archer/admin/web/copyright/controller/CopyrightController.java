@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import com.archer.admin.web.component.ResponseResultBody;
+import com.archer.admin.web.component.WebContext;
 
 @RequestMapping("/copyright")
 @RestController
@@ -23,27 +24,27 @@ public class CopyrightController {
     private BizCopyrightService bizCopyrightService;
 
     @RequestMapping("/detail/{copyrightId}")
-    public CopyrightRes detail(@PathVariable("copyrightId") int copyrightId) {
+    public CopyrightRes detail(WebContext webContext, @PathVariable("copyrightId") int copyrightId) {
         return bizCopyrightService.query(copyrightId);
     }
 
     @RequestMapping(value = "/modify", method = RequestMethod.POST)
-    public Result modify(@RequestBody Copyright copyright) {
+    public Result modify(WebContext webContext, @RequestBody Copyright copyright) {
         return bizCopyrightService.modify(copyright);
     }
 
     @RequestMapping("/list")
-    public CopyrightQueryRes list(CopyrightQueryReq copyrightQueryReq) {
+    public CopyrightQueryRes list(WebContext webContext, CopyrightQueryReq copyrightQueryReq) {
         return bizCopyrightService.list(copyrightQueryReq);
     }
 
     @RequestMapping("/remove")
-    public Result remove(int id) {
+    public Result remove(WebContext webContext, int id) {
         return bizCopyrightService.remove(id);
     }
 
     @RequestMapping(value = "/add", method = RequestMethod.POST)
-    public Result add(@RequestBody Copyright copyright) {
+    public Result add(WebContext webContext, @RequestBody Copyright copyright) {
         return bizCopyrightService.save(copyright);
     }
 }
