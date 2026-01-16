@@ -384,17 +384,22 @@ public class JsonToJavaClassGenerator {
             + "            @current-change=\"handleClick\" />\n"
             + "    </div>\n"
             + "\n"
-            + "    <el-dialog v-model=\"dialogVisible\" :title=\"action === ''add'' ? ''新增{3}'' : ''编辑{3}''\" draggable width=\"650\">\n"
-            + "        <el-form :inline=\"true\" :model=\"submitForm\" ref=\"form\">\n"
+            + "<el-drawer v-model=\"dialogVisible\" direction=\"rtl\">\n"
+            + "        <template #header>\n"
+            + "        <h4>'{{' action === ''add'' ? ''新增{3}'' : ''编辑{3}'' '}}'</h4>\n"
+            + "        </template>\n"
+            + "        <template #default>\n"
+            + "        <el-form :model=\"submitForm\" ref=\"form\" label-width=\"130px\" label-position=\"left\">"
             + "{4}"
             + "        </el-form>\n"
+            + "        </template>\n"
             + "        <template #footer>\n"
             + "            <div class=\"dialog-footer\">\n"
             + "                <el-button @click=\"handleCancel\">取消</el-button>\n"
             + "                <el-button type=\"primary\" @click=\"onSubmit\">确定</el-button>\n"
             + "            </div>\n"
             + "        </template>\n"
-            + "    </el-dialog>\n"
+            + "    </el-drawer>\n"
             + "</template>\n"
             + "\n"
             + "<script setup>\n"
@@ -528,24 +533,18 @@ public class JsonToJavaClassGenerator {
             + "</script>\n"
             + "\n"
             + "<style lang=\"less\" scoped>\n"
-            + ".table '{'\n"
-            + "    position: relative;\n"
             + "\n"
-            + "    .pager '{'\n"
-            + "        position: absolute;\n"
-            + "        bottom: -50px;\n"
-            + "        right: 0;\n"
-            + "    '}'\n"
+            + ".search-form :deep(.el-form-item) '{'\n"
+            + "    margin-bottom: 0;\n"
+            + "    display: inline-flex;\n"
+            + "    align-items: center;\n"
             + "'}'\n"
             + "\n"
-            + ".header '{'\n"
+            + ".search-form :deep(.el-form-item__content) '{'\n"
             + "    display: flex;\n"
-            + "\n"
-            + "    form '{'\n"
-            + "        width: 100%;\n"
-            + "    '}'\n"
+            + "    align-items: center;\n"
             + "'}'\n"
-            + "</style>";
+            + "</style>\n";
 
     public static void generateJavaClassFromJson(String jsonFilePath, GenerationParams params) throws IOException {
         // 读取JSON文件内容并解析为JSONObject
@@ -688,31 +687,30 @@ public class JsonToJavaClassGenerator {
         List<List<StructAttr>> partition = Lists.partition(baseStructAttrs, 2);
         StringBuilder builder = new StringBuilder();
         for (List<StructAttr> structAttrs : partition) {
-            String row = "            <el-row>\n{0}            </el-row>\n";
             String message = structAttrs.stream().map(JsonToJavaClassGenerator::submitFormVue0)
                     .collect(Collectors.joining("\n"));
-            builder.append(MessageFormat.format(row, message) + "\n");
+            builder.append(message + "\n");
         }
         return builder.toString();
     }
 
     private static String submitFormVue0(StructAttr structAttr) {
         if (structAttr.isEnumClass()) {
-            return MessageFormat.format("                <el-col :span=\"12\">\n"
+            return MessageFormat.format("                \n"
                     + "                    <el-form-item label=\"{0}\" prop=\"{1}\" :rules=\"['{' required: true, message: ''{0}是必填项'' '}']\">\n"
-                    + "                        <el-select v-model=\"submitForm.{1}\" placeholder=\"请选择{0}\" style=\"width:168px\">\n"
+                    + "                        <el-select v-model=\"submitForm.{1}\" placeholder=\"请选择{0}\" style=\"width:148px\">\n"
                     + "                            <el-option v-for=\"item in {1}SubmitOptions\" :key=\"item.value\" :label=\"item.label\"\n"
                     + "                                :value=\"item.value\">\n"
                     + "                            </el-option>\n"
                     + "                        </el-select>\n"
                     + "                    </el-form-item>\n"
-                    + "                </el-col>", structAttr.getDesc(), structAttr.getName());
+                    + "                ", structAttr.getDesc(), structAttr.getName());
         }
-        return MessageFormat.format("                <el-col :span=\"12\">\n"
+        return MessageFormat.format("                \n"
                 + "                    <el-form-item label=\"{0}\" prop=\"{1}\" :rules=\"['{' required: true, message: ''{0}是必填项'' '}']\">\n"
                 + "                        <el-input v-model=\"submitForm.{1}\" placeholder=\"请输入{0}\" />\n"
                 + "                    </el-form-item>\n"
-                + "                </el-col>", structAttr.getDesc(), structAttr.getName());
+                + "                ", structAttr.getDesc(), structAttr.getName());
     }
 
 
@@ -731,7 +729,7 @@ public class JsonToJavaClassGenerator {
                 + "                    </el-form-item>\n";
         String text = "";
         if(structAttr.isEnumClass()) {
-            text = MessageFormat.format("<el-select v-model=\"searchForm.{0}\" placeholder=\"请选择{1}\" style=\"width:168px\">\n"
+            text = MessageFormat.format("<el-select v-model=\"searchForm.{0}\" placeholder=\"请选择{1}\" style=\"width:148px\">\n"
                     + "                            <el-option v-for=\"item in {0}Options\" :key=\"item.value\" :label=\"item.label\"\n"
                     + "                                :value=\"item.value\">\n"
                     + "                            </el-option>\n"
@@ -1111,7 +1109,8 @@ public class JsonToJavaClassGenerator {
 //            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/user_role.json", params);
 //            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/user.json", params);
 //            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/role.json", params);
-            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/copyright.json", params);
+//            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/copyright.json", params);
+            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/category.json", params);
             System.out.println("Java class generated successfully!");
         } catch (IOException e) {
             System.out.println("Error generating Java class: " + e.getMessage());

@@ -1,4 +1,4 @@
-package com.archer.admin.web.copyright.entities;
+package com.archer.admin.web.category.entities;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,8 +12,8 @@ import java.util.stream.Collectors;
 public enum StatusEnum {
 
     EMPTY(0, "全部"),
-    VALID(1, "正常"),
-EXPIRE(-1, "已到期")    ;
+    PUBLISH(1, "已上架"),
+UNPUBLISH(-1, "未上架")    ;
 
     private int value;
     private String label;

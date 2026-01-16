@@ -7,27 +7,21 @@ import java.time.LocalDateTime;
 import lombok.Data;
 
 @Data
-@TableName("copyright")
-public class Copyright {
+@TableName("category")
+public class Category {
     @TableId(type = IdType.AUTO)
         // ID
         private Integer id;
-        // IP名称
-        private String copyrightName;
-        // 授权方
-        private String cpName;
+        // 类目名称
+        private String categoryName;
+        // 一级类目ID
+        private Integer topCategoryId;
+        // 二级类目ID
+        private Integer secondCategoryId;
+        // 三级类目ID
+        private Integer thirdCategoryId;
         // 状态
         private Integer status;
-        // IP海报
-        private String placardUrl;
-        // 授权到期时间
-        private LocalDateTime expireTime;
-        // 授权类目
-        private Integer topCategoryId;
-        // 预留清货天数
-        private Integer clearDays;
-        // 授权书
-        private String letterUrl;
         // 状态
         private Integer valid;
         // 创建时间
