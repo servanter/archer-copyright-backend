@@ -58,16 +58,18 @@ public class JsonToJavaClassGenerator {
 
         private String timeFormat;
 
+        private String file;
+
         public String getRefClassName() {
             List<String> strings = Splitter.on(".").splitToList(ref);
-            if(strings.size()>0) {
+            if (strings.size() > 0) {
                 return strings.get(strings.size() - 1).replace("@", "");
             }
             return "";
         }
 
         public boolean isDigit() {
-            if(type.toLowerCase().equals("integer")) {
+            if (type.toLowerCase().equals("integer")) {
                 return true;
             }
 
@@ -80,6 +82,14 @@ public class JsonToJavaClassGenerator {
 
         public String dateOrTime() {
             return this.getTimeFormat().equals("yyyy-MM-dd") ? "date" : "datetime";
+        }
+
+        public boolean isFile() {
+            return StringUtils.isNotBlank(this.file);
+        }
+
+        public boolean isFileImage() {
+            return StringUtils.isNotBlank(this.file) && this.file.equals("image");
         }
 
         private List<RefAttr> refAttrs;
@@ -530,6 +540,7 @@ public class JsonToJavaClassGenerator {
             + "    '}');\n"
             + "\n"
             + "'}'\n"
+            + "{12}"
             + "\n"
             + "// 按钮 - 删除\n"
             + "function clickDelete(item) '{'\n"
@@ -580,7 +591,7 @@ public class JsonToJavaClassGenerator {
                 }
 
                 String desc = "";
-                if(StringUtils.isNotBlank(fieldDesc)) {
+                if (StringUtils.isNotBlank(fieldDesc)) {
                     desc = "// " + fieldDesc;
                 }
                 fieldDefinitions.add(MessageFormat.format(FIELD_TEMPLATE, desc, fieldType, propertyName));
@@ -617,7 +628,7 @@ public class JsonToJavaClassGenerator {
         generateVue(params, struct);
     }
 
-    private static void generateVue(GenerationParams params, Struct struct) throws IOException{
+    private static void generateVue(GenerationParams params, Struct struct) throws IOException {
         List<StructAttr> formFields = struct.getFields().stream()
                 .filter(JsonToJavaClassGenerator::isFormField)
                 .collect(Collectors.toList());
@@ -630,6 +641,22 @@ public class JsonToJavaClassGenerator {
         String submitFormAssignTemplate = formFields.stream()
                 .map(attr -> "        submitForm." + attr.getName() + " = item." + attr.getName() + "\n")
                 .collect(Collectors.joining("\n"));
+
+        // 普通上传文件
+        int hasUploadFile = struct.getFields().stream()
+                .filter(StructAttr::isFile)
+                .filter(structAttr -> !structAttr.isFileImage())
+                .collect(Collectors.toList())
+                .size();
+
+        if (hasUploadFile > 0) {
+            String uploadFileUrlAppend = struct.getFields().stream()
+                    .filter(StructAttr::isFile)
+                    .filter(structAttr -> !structAttr.isFileImage())
+                    .map(structAttr -> MessageFormat.format("\n{0}FileList.value = item.{0} ? ['{' name: item.{0}.split(''/'').pop(), url: item.{0} }] : []", structAttr.getName()))
+                    .collect(Collectors.joining("\n"));
+            submitFormAssignTemplate = submitFormAssignTemplate + uploadFileUrlAppend;
+        }
 
         // 提交框 - 表单
         String submitFormVue = submitFormVue(formFields, struct);
@@ -646,13 +673,13 @@ public class JsonToJavaClassGenerator {
         // 枚举 - 初始化
         String enumInitTemplate = formFields.stream()
                 .filter(StructAttr::isEnumClass)
-                .map(attr-> "const "+ attr.getName() + "Options = ref([])\nconst " + attr.getName() + "SubmitOptions = ref([])" )
+                .map(attr -> "const " + attr.getName() + "Options = ref([])\nconst " + attr.getName() + "SubmitOptions = ref([])")
                 .collect(Collectors.joining("\n"));
 
         // 枚举 - 赋值
         String enumAssignTemplate = formFields.stream()
                 .filter(StructAttr::isEnumClass)
-                .map(attr-> attr.getName() + "Options.value = data." + attr.getName() + "s\n" + attr.getName() + "SubmitOptions.value = data." + attr.getName() + "s.filter(x=>x.value !== 0)")
+                .map(attr -> attr.getName() + "Options.value = data." + attr.getName() + "s\n" + attr.getName() + "SubmitOptions.value = data." + attr.getName() + "s.filter(x=>x.value !== 0)")
                 .collect(Collectors.joining("\n"));
 
         // 搜索框
@@ -666,7 +693,11 @@ public class JsonToJavaClassGenerator {
                 .map(JsonToJavaClassGenerator::tableVue)
                 .collect(Collectors.joining("\n"));
 
-
+        // 上传
+        String uploadVue = struct.getFields().stream()
+                .filter(StructAttr::isFile)
+                .map(JsonToJavaClassGenerator::uploadVue)
+                .collect(Collectors.joining("\n"));
         String str = MessageFormat.format(VUE_TEMPLATE, struct.getName(),
                 searchFormVue,
                 tableVue,
@@ -678,10 +709,12 @@ public class JsonToJavaClassGenerator {
                 searchFormAssignTemplate,
                 submitFormAssignTemplate,
                 submitFormTemplate,
-                struct.getLowerName());
+                struct.getLowerName(),
+                uploadVue);
 
         writeVUEToFile(str, struct, params);
     }
+
 
     private static void writeVUEToFile(String str, Struct struct, GenerationParams params) throws IOException {
         String outputFilePath = params.parentPackage.replace('.', '/') + "/" + struct.getName() + ".vue";
@@ -720,9 +753,6 @@ public class JsonToJavaClassGenerator {
                     + "                ", structAttr.getDesc(), structAttr.getName());
         } else if (structAttr.isDateClass()) {
             // 日期
-            String s = structAttr.dateOrTime();
-            String name = structAttr.getName();
-            String desc = structAttr.getDesc();
             return MessageFormat.format("                \n"
                     + "                    <el-form-item label=\"{0}\" prop=\"{1}\" :rules=\"['{' required: true, message: ''{0}是必填项'' '}']\">\n"
                     + "                        <el-date-picker\n" +
@@ -731,7 +761,56 @@ public class JsonToJavaClassGenerator {
                     "                        placeholder=\"请选择{0}\"\n" +
                     "                    />"
                     + "                    </el-form-item>\n"
-                    + "                ", desc, name, s);
+                    + "                ", structAttr.getDesc(), structAttr.getName(), structAttr.dateOrTime());
+        } else if (structAttr.isDateClass()) {
+            // 日期
+            return MessageFormat.format("                \n"
+                    + "                    <el-form-item label=\"{0}\" prop=\"{1}\" :rules=\"['{' required: true, message: ''{0}是必填项'' '}']\">\n"
+                    + "                        <el-date-picker\n" +
+                    "                        v-model=\"submitForm.{1}\"\n" +
+                    "                        type=\"{2}\"\n" +
+                    "                        placeholder=\"请选择{0}\"\n" +
+                    "                    />"
+                    + "                    </el-form-item>\n"
+                    + "                ", structAttr.getDesc(), structAttr.getName(), structAttr.dateOrTime());
+        } else if (structAttr.isFile()) {
+            // 文件上传
+            if (structAttr.isFileImage()) {
+                return MessageFormat.format("                \n"
+                        + "                    <el-form-item label=\"{0}\" prop=\"{1}\" :rules=\"['{' required: true, message: ''{0}是必填项'' '}']\">\n"
+                        + "                      <el-upload\n" +
+                        "                            class=\"border-2 border-dashed border-gray-300 rounded-lg cursor-pointer relative overflow-hidden hover:border-blue-500 transition-colors\"\n" +
+                        "                            action=\"http://localhost:8080/api/common/upload\"\n" +
+                        "                            :show-file-list=\"false\"\n" +
+                        "                            :on-success=\"handle{2}FileUploadSuccess\"\n" +
+                        "                            :before-upload=\"proxy.$upload.validateImageFormat\"\n" +
+                        "                        >\n" +
+                        "                            <img v-if=\"submitForm.{1}\" :src=\"submitForm.{1}\" class=\"w-[60px] h-[60px] object-cover\" />\n" +
+                        "                            <div v-else class=\"w-[60px] h-[60px] flex items-center justify-center text-gray-400\">\n" +
+                        "                                <el-icon size=\"28\"><Plus /></el-icon>\n" +
+                        "                            </div>\n" +
+                        "                        </el-upload>  "
+                        + "                    </el-form-item>\n"
+                        + "                ", structAttr.getDesc(), structAttr.getName(), toUpperCamelCase(structAttr.getName()));
+            } else {
+                return MessageFormat.format("                \n"
+                        + "                    <el-form-item label=\"{0}\" prop=\"{1}\" :rules=\"['{' required: true, message: ''{0}是必填项'' '}']\">\n"
+                        + "                     <el-upload\n" +
+                        "                            action=\"http://localhost:8080/api/common/upload\"\n" +
+                        "                            v-model:file-list=\"{1}FileList\"" +
+                        "                            :show-file-list=\"true\"\n" +
+                        "                            :limit=\"1\"\n" +
+                        "                            :on-exceed=\"proxy.$upload.handleExceed\"\n" +
+                        "                            :on-success=\"handle{2}FileUploadSuccess\"\n" +
+                        "                        >\n" +
+                        "                            <div class=\"h-10 flex items-center justify-center text-gray-400\">\n" +
+                        "                                <span>点击上传</span>\n" +
+                        "                            </div>\n" +
+                        "                        </el-upload> "
+                        + "                    </el-form-item>\n"
+                        + "                ", structAttr.getDesc(), structAttr.getName(), toUpperCamelCase(structAttr.getName()));
+            }
+
         }
 
         // input
@@ -749,15 +828,31 @@ public class JsonToJavaClassGenerator {
                         structAttr.isEnumClass() ? structAttr.getName() + "Str" : structAttr.getName(), structAttr.getDesc());
     }
 
+    private static String uploadVue(StructAttr structAttr) {
+
+        // 文件上传回调
+        String uploadSuccessFunction = MessageFormat.format("function handle{1}FileUploadSuccess(response, uploadFile) '{'\n" +
+                "    submitForm.{0} = proxy.$upload.handleUploadSuccess(response, uploadFile)\n" +
+                "'}'", structAttr.getName(), toUpperCamelCase(structAttr.getName()));
+
+        // 不是图片，新增下面已传的list列表
+        String editFileListView = "";
+        if (structAttr.isFile() && !structAttr.isFileImage()) {
+            editFileListView = MessageFormat.format("\n\nconst {0}FileList = ref([])", structAttr.getName());
+        }
+
+        return uploadSuccessFunction + editFileListView;
+    }
+
     private static String searchForm0(StructAttr structAttr) {
-        if(!structAttr.isQuery()) {
+        if (!structAttr.isQuery()) {
             return "";
         }
         String template = "                    <el-form-item label=\"{0}\" label-width=\"100px\">\n"
                 + "                        {1}"
                 + "                    </el-form-item>\n";
         String text = "";
-        if(structAttr.isEnumClass()) {
+        if (structAttr.isEnumClass()) {
             text = MessageFormat.format("<el-select v-model=\"searchForm.{0}\" placeholder=\"请选择{1}\" style=\"width:148px\">\n"
                     + "                            <el-option v-for=\"item in {0}Options\" :key=\"item.value\" :label=\"item.label\"\n"
                     + "                                :value=\"item.value\">\n"
@@ -781,7 +876,7 @@ public class JsonToJavaClassGenerator {
     }
 
     private static String searchFormAssignTemplate0(StructAttr structAttr) {
-        if(structAttr.isEnumClass() || structAttr.isDigit()) {
+        if (structAttr.isEnumClass() || structAttr.isDigit()) {
             return MessageFormat.format("    if (searchForm.{0}.toString().length > 0) '{'\n"
                     + "        config.{0} = searchForm.{0}\n"
                     + "    '}'", structAttr.getName());
@@ -815,26 +910,26 @@ public class JsonToJavaClassGenerator {
 
     private static String generateSQLField(StructAttr structAttr) {
         String fieldDesc = "";
-        if(structAttr.getType().equals("Integer")) {
-            if(structAttr.getName().equals("valid")) {
-                fieldDesc = "`"+camelCaseToUnderscore(structAttr.getName())+"` int(11) NOT NULL DEFAULT 1";
+        if (structAttr.getType().equals("Integer")) {
+            if (structAttr.getName().equals("valid")) {
+                fieldDesc = "`" + camelCaseToUnderscore(structAttr.getName()) + "` int(11) NOT NULL DEFAULT 1";
             } else {
-                if(structAttr.isPrimary()) {
-                    fieldDesc = "`"+camelCaseToUnderscore(structAttr.getName())+"` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY ";
+                if (structAttr.isPrimary()) {
+                    fieldDesc = "`" + camelCaseToUnderscore(structAttr.getName()) + "` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY ";
                 } else {
-                    fieldDesc = "`"+camelCaseToUnderscore(structAttr.getName())+"` int(11) NOT NULL DEFAULT 0";
+                    fieldDesc = "`" + camelCaseToUnderscore(structAttr.getName()) + "` int(11) NOT NULL DEFAULT 0";
                 }
 
             }
-        }else if(structAttr.getType().equals("String")) {
-            fieldDesc = "`"+camelCaseToUnderscore(structAttr.getName())+"` varchar(500) NOT NULL DEFAULT ''";
-        }else if(structAttr.getType().equals("LocalDateTime")) {
-            if(structAttr.getName().equals("createTime")) {
-                fieldDesc = "`"+camelCaseToUnderscore(structAttr.getName())+"` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP";
-            } else  if(structAttr.getName().equals("updateTime")) {
-                fieldDesc = "`"+camelCaseToUnderscore(structAttr.getName())+"` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP";
+        } else if (structAttr.getType().equals("String")) {
+            fieldDesc = "`" + camelCaseToUnderscore(structAttr.getName()) + "` varchar(500) NOT NULL DEFAULT ''";
+        } else if (structAttr.getType().equals("LocalDateTime")) {
+            if (structAttr.getName().equals("createTime")) {
+                fieldDesc = "`" + camelCaseToUnderscore(structAttr.getName()) + "` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP";
+            } else if (structAttr.getName().equals("updateTime")) {
+                fieldDesc = "`" + camelCaseToUnderscore(structAttr.getName()) + "` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP";
             } else {
-                fieldDesc = "`"+camelCaseToUnderscore(structAttr.getName())+"` timestamp NOT NULL ";
+                fieldDesc = "`" + camelCaseToUnderscore(structAttr.getName()) + "` timestamp NOT NULL ";
             }
         }
 
@@ -919,7 +1014,7 @@ public class JsonToJavaClassGenerator {
         // 生成enum 自定义的enums
         List<Pair<String, String>> fileContent = struct.getFields().stream()
                 .filter(StructAttr::isEnumClass)
-                .filter(attr-> CollectionUtils.isNotEmpty(attr.getRefAttrs()))
+                .filter(attr -> CollectionUtils.isNotEmpty(attr.getRefAttrs()))
                 .map(attr -> {
                     String enumLabels = attr.getRefAttrs().stream()
                             .map(ref -> ref.getDesc() + "(" + ref.getValue() + ", \"" + ref.getLabel() + "\")")
@@ -939,9 +1034,9 @@ public class JsonToJavaClassGenerator {
         String queryReqStr = MessageFormat.format(WEB_ENTITY_INNER_QUERY_REQ_TEMPLATE, struct.getName(), querys);
 
         String enumValues = "";
-        if(fileContent.size() > 0) {
+        if (fileContent.size() > 0) {
             enumValues = fileContent.stream()
-                    .map(pair-> "@Default\nprivate List<Map<String, Object>> " + replaceEnum(toCamelCase(pair.getKey())) + "s = " + pair.getKey() + ".TOTALS;")
+                    .map(pair -> "@Default\nprivate List<Map<String, Object>> " + replaceEnum(toCamelCase(pair.getKey())) + "s = " + pair.getKey() + ".TOTALS;")
                     .collect(Collectors.joining("\n"));
         }
         // qurey res
@@ -966,13 +1061,13 @@ public class JsonToJavaClassGenerator {
     }
 
     private static String generateWebEntityGetMethod(StructAttr structAttr) {
-        if(structAttr.getRef().equals("@com.archer.admin.web.common.ValidEnum")) {
+        if (structAttr.getRef().equals("@com.archer.admin.web.common.ValidEnum")) {
             // 默认引入
-            return MessageFormat.format("\npublic String get"+toUpperCamelCase(structAttr.getName())+"Str() '{' \n {0} \n'}'",
-                    "return ValidEnum.of("+structAttr.getName()+").getLabel();");
+            return MessageFormat.format("\npublic String get" + toUpperCamelCase(structAttr.getName()) + "Str() '{' \n {0} \n'}'",
+                    "return ValidEnum.of(" + structAttr.getName() + ").getLabel();");
         } else {
-            return MessageFormat.format("\npublic String get"+toUpperCamelCase(structAttr.getName())+"Str() '{' \n {0} \n'}'",
-                    "return "+structAttr.getRefClassName()+".of("+structAttr.getName()+").getLabel();");
+            return MessageFormat.format("\npublic String get" + toUpperCamelCase(structAttr.getName()) + "Str() '{' \n {0} \n'}'",
+                    "return " + structAttr.getRefClassName() + ".of(" + structAttr.getName() + ").getLabel();");
         }
     }
 
@@ -991,13 +1086,13 @@ public class JsonToJavaClassGenerator {
 
     private static String toWebEntityFieldStr(StructAttr attr) {
         String desc = "";
-        if(StringUtils.isNotBlank(attr.getDesc())) {
+        if (StringUtils.isNotBlank(attr.getDesc())) {
             desc = "// " + attr.getDesc();
         }
         String annotation = "";
         if (attr.getType().equals("LocalDateTime")) {
-            if(StringUtils.isNotBlank(attr.getTimeFormat())) {
-                annotation = "@JsonFormat(pattern = \""+attr.getTimeFormat()+"\")";
+            if (StringUtils.isNotBlank(attr.getTimeFormat())) {
+                annotation = "@JsonFormat(pattern = \"" + attr.getTimeFormat() + "\")";
             } else {
                 annotation = "@JsonFormat(pattern = \"yyyy-MM-dd HH:mm:ss\")";
             }
