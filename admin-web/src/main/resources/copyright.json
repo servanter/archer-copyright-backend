@@ -43,15 +43,17 @@
       ]
     },
     {
+      "name": "authExpireDate",
+      "query": false,
+      "type": "LocalDateTime",
+      "timeFormat": "yyyy-MM-dd",
+      "desc": "授权到期日期"
+    },
+    {
       "name": "placardUrl",
       "query": false,
       "type": "String",
       "desc": "IP海报"
-    },
-    {
-      "name": "expireTime",
-      "type": "LocalDateTime",
-      "desc": "授权到期时间"
     },
     {
       "name": "topCategoryId",

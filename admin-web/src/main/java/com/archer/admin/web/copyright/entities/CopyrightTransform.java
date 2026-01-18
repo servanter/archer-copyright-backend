@@ -33,12 +33,12 @@ public class CopyrightTransform {
         // 状态
 
         private Integer status;
+        // 授权到期日期
+@JsonFormat(pattern = "yyyy-MM-dd")
+        private LocalDateTime authExpireDate;
         // IP海报
 
         private String placardUrl;
-        // 授权到期时间
-@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-        private LocalDateTime expireTime;
         // 授权类目
 
         private Integer topCategoryId;
@@ -64,8 +64,8 @@ return CopyrightRes.builder()
 .copyrightName(copyright.getCopyrightName())
 .cpName(copyright.getCpName())
 .status(copyright.getStatus())
+.authExpireDate(copyright.getAuthExpireDate())
 .placardUrl(copyright.getPlacardUrl())
-.expireTime(copyright.getExpireTime())
 .topCategoryId(copyright.getTopCategoryId())
 .clearDays(copyright.getClearDays())
 .letterUrl(copyright.getLetterUrl())

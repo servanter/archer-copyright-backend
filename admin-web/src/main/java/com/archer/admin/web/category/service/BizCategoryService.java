@@ -44,7 +44,7 @@ public class BizCategoryService {
 
                     .eq(categoryQueryReq.getStatus() != 0, Category::getStatus, categoryQueryReq.getStatus())
 
-                    .eq(Category::getTopCategoryId, -1)
+                    .eq(Category::getTopCategoryId, 0)
 
                     .page(new Page<>(categoryQueryReq.getPageNo(), categoryQueryReq.getPageSize()));
         } else if (categoryQueryReq.getTopCategoryId() > 0 && categoryQueryReq.getSecondCategoryId() <= 0){
@@ -57,7 +57,7 @@ public class BizCategoryService {
 
                     .eq(Category::getTopCategoryId, categoryQueryReq.getTopCategoryId())
 
-                    .le(Category::getSecondCategoryId, 0)
+                    .eq(Category::getSecondCategoryId, 0)
 
                     .page(new Page<>(categoryQueryReq.getPageNo(), categoryQueryReq.getPageSize()));
         } else {
@@ -131,7 +131,7 @@ public class BizCategoryService {
     private int getNextCategoryId(CategoryLevel categoryLevel) {
         if (categoryLevel == CategoryLevel.LEVEL_1) {
             return categoryService.lambdaQuery()
-                    .eq(Category::getTopCategoryId, -1)
+                    .eq(Category::getTopCategoryId, 0)
                     .select(Category::getId)
                     .orderByDesc(Category::getId)
                     .last(" LIMIT 1")
@@ -170,7 +170,7 @@ public class BizCategoryService {
             case LEVEL_2:
                 return categoryService.lambdaQuery()
                         .eq(Category::getTopCategoryId, categoryId)
-                        .eq(Category::getSecondCategoryId, -1)
+                        .eq(Category::getSecondCategoryId, 0)
                         .list()
                         .stream()
                         .map(category -> SelectOptionLabel.of(category.getCategoryName(), category.getId()))

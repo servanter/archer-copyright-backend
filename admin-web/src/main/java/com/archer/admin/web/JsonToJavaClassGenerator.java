@@ -55,6 +55,9 @@ public class JsonToJavaClassGenerator {
         private String fullDesc;
         private boolean enumClass;
         private String ref;
+
+        private String timeFormat;
+
         public String getRefClassName() {
             List<String> strings = Splitter.on(".").splitToList(ref);
             if(strings.size()>0) {
@@ -70,6 +73,15 @@ public class JsonToJavaClassGenerator {
 
             return false;
         }
+
+        public boolean isDateClass() {
+            return this.getType().equals("LocalDateTime");
+        }
+
+        public String dateOrTime() {
+            return this.getTimeFormat().equals("yyyy-MM-dd") ? "date" : "datetime";
+        }
+
         private List<RefAttr> refAttrs;
     }
 
@@ -696,6 +708,7 @@ public class JsonToJavaClassGenerator {
 
     private static String submitFormVue0(StructAttr structAttr) {
         if (structAttr.isEnumClass()) {
+            // Select
             return MessageFormat.format("                \n"
                     + "                    <el-form-item label=\"{0}\" prop=\"{1}\" :rules=\"['{' required: true, message: ''{0}是必填项'' '}']\">\n"
                     + "                        <el-select v-model=\"submitForm.{1}\" placeholder=\"请选择{0}\" style=\"width:148px\">\n"
@@ -705,7 +718,23 @@ public class JsonToJavaClassGenerator {
                     + "                        </el-select>\n"
                     + "                    </el-form-item>\n"
                     + "                ", structAttr.getDesc(), structAttr.getName());
+        } else if (structAttr.isDateClass()) {
+            // 日期
+            String s = structAttr.dateOrTime();
+            String name = structAttr.getName();
+            String desc = structAttr.getDesc();
+            return MessageFormat.format("                \n"
+                    + "                    <el-form-item label=\"{0}\" prop=\"{1}\" :rules=\"['{' required: true, message: ''{0}是必填项'' '}']\">\n"
+                    + "                        <el-date-picker\n" +
+                    "                        v-model=\"submitForm.{1}\"\n" +
+                    "                        type=\"{2}\"\n" +
+                    "                        placeholder=\"请选择{0}\"\n" +
+                    "                    />"
+                    + "                    </el-form-item>\n"
+                    + "                ", desc, name, s);
         }
+
+        // input
         return MessageFormat.format("                \n"
                 + "                    <el-form-item label=\"{0}\" prop=\"{1}\" :rules=\"['{' required: true, message: ''{0}是必填项'' '}']\">\n"
                 + "                        <el-input v-model=\"submitForm.{1}\" placeholder=\"请输入{0}\" />\n"
@@ -734,7 +763,15 @@ public class JsonToJavaClassGenerator {
                     + "                                :value=\"item.value\">\n"
                     + "                            </el-option>\n"
                     + "                        </el-select>\n", structAttr.getName(), structAttr.getDesc());
-        }  else {
+        } else if (structAttr.isDateClass()) {
+            text = MessageFormat.format("<el-select v-model=\"searchForm.{0}\" placeholder=\"请选择{1}\" style=\"width:148px\">\n"
+                    + "             <el-date-picker\n" +
+                    "                        v-model=\"searchForm.{0}\"\n" +
+                    "                        type=\"{2}\"\n" +
+                    "                        placeholder=\"请选择{1}\"\n" +
+                    "                    />                "
+                    + "                        \n", structAttr.getName(), structAttr.getDesc(), structAttr.dateOrTime());
+        } else {
             text = MessageFormat
                     .format("                        <el-input v-model=\"searchForm.{0}\" placeholder=\"请输入{1}\" clearable />\n",
                             structAttr.getName(), structAttr.getDesc());
@@ -849,6 +886,8 @@ public class JsonToJavaClassGenerator {
         } else if (structAttr.getType().equals("String")) {
             // .like(StringUtils.isNotBlank(userQueryReq.getUserName()), User::getUserName, userQueryReq.getUserName())
             return MessageFormat.format(".like(StringUtils.isNotBlank({0}QueryReq." + toGetMethod(structAttr.getName()) + "), {1}::get" + toUpperCamelCase(structAttr.getName()) + ", {0}QueryReq." + toGetMethod(structAttr.getName()) + ")", struct.getTableName(), struct.getName());
+        } else if (structAttr.getType().equals("LocalDateTime")) {
+            return MessageFormat.format(".ge(StringUtils.isNotBlank({0}QueryReq." + toGetMethod(structAttr.getName()) + "), {1}::get" + toUpperCamelCase(structAttr.getName()) + ", {0}QueryReq." + toGetMethod(structAttr.getName()) + ")", struct.getTableName(), struct.getName());
         }
 
         return "";
@@ -957,7 +996,11 @@ public class JsonToJavaClassGenerator {
         }
         String annotation = "";
         if (attr.getType().equals("LocalDateTime")) {
-            annotation = "@JsonFormat(pattern = \"yyyy-MM-dd HH:mm:ss\")";
+            if(StringUtils.isNotBlank(attr.getTimeFormat())) {
+                annotation = "@JsonFormat(pattern = \""+attr.getTimeFormat()+"\")";
+            } else {
+                annotation = "@JsonFormat(pattern = \"yyyy-MM-dd HH:mm:ss\")";
+            }
         }
         String descAndAnno = StringUtils.isNotBlank(desc) ? (desc + "\n" + annotation) : annotation;
         return MessageFormat.format(FIELD_TEMPLATE, descAndAnno, attr.getType(), attr.getName());
@@ -1109,8 +1152,8 @@ public class JsonToJavaClassGenerator {
 //            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/user_role.json", params);
 //            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/user.json", params);
 //            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/role.json", params);
-//            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/copyright.json", params);
-            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/category.json", params);
+            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/copyright.json", params);
+//            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/category.json", params);
             System.out.println("Java class generated successfully!");
         } catch (IOException e) {
             System.out.println("Error generating Java class: " + e.getMessage());
