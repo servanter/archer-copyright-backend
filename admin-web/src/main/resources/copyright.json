@@ -50,12 +50,6 @@
       "desc": "授权到期日期"
     },
     {
-      "name": "placardUrl",
-      "query": false,
-      "type": "String",
-      "desc": "IP海报"
-    },
-    {
       "name": "topCategoryId",
       "type": "Integer",
       "desc": "授权类目"
@@ -66,9 +60,16 @@
       "desc": "预留清货天数"
     },
     {
-      "name": "letterUrl",
+      "name": "authUrl",
       "type": "String",
-      "desc": "授权书"
+      "desc": "授权书",
+      "file": "file"
+    },
+    {
+      "name": "placardUrl",
+      "type": "String",
+      "desc": "海报",
+      "file": "image"
     },
     {
       "name": "valid",
