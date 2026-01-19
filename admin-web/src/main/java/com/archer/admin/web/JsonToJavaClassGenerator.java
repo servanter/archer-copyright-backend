@@ -77,7 +77,7 @@ public class JsonToJavaClassGenerator {
         }
 
         public boolean isDateClass() {
-            return this.getType().equals("LocalDateTime");
+            return this.getType().equals("LocalDateTime") || this.getType().equals("LocalDate");
         }
 
         public String dateOrTime() {
@@ -108,7 +108,9 @@ public class JsonToJavaClassGenerator {
                     "import com.baomidou.mybatisplus.annotation.IdType;\n" +
                     "import com.baomidou.mybatisplus.annotation.TableId;\n" +
                     "import com.baomidou.mybatisplus.annotation.TableName;\n" +
+                    "import com.fasterxml.jackson.annotation.JsonFormat;\n" +
                     "import java.time.LocalDateTime;\n" +
+                    "import java.time.LocalDate;\n" +
                     "import lombok.Data;\n\n" +
                     "@Data\n" +
                     "@TableName(\"{1}\")\n" +
@@ -161,6 +163,7 @@ public class JsonToJavaClassGenerator {
                     "import com.fasterxml.jackson.annotation.JsonInclude;\n" +
                     "import com.fasterxml.jackson.annotation.JsonFormat;\n" +
                     "import java.time.LocalDateTime;\n" +
+                    "import java.time.LocalDate;\n" +
                     "import java.util.List;\n" +
                     "import java.util.Map;\n" +
                     "import lombok.Builder;\n" +
@@ -406,7 +409,7 @@ public class JsonToJavaClassGenerator {
             + "            @current-change=\"handleClick\" />\n"
             + "    </div>\n"
             + "\n"
-            + "<el-drawer v-model=\"dialogVisible\" direction=\"rtl\">\n"
+            + "<el-drawer v-model=\"dialogVisible\" direction=\"rtl\" @close=\"handleCancel\">\n"
             + "        <template #header>\n"
             + "        <h4>'{{' action === ''add'' ? ''新增{3}'' : ''编辑{3}'' '}}'</h4>\n"
             + "        </template>\n"
@@ -594,6 +597,10 @@ public class JsonToJavaClassGenerator {
                 if (StringUtils.isNotBlank(fieldDesc)) {
                     desc = "// " + fieldDesc;
                 }
+                if((fieldType.equalsIgnoreCase("LocalDateTime") || fieldType.equalsIgnoreCase("LocalDate")) && StringUtils.isNotBlank(fieldObject.getString("timeFormat"))) {
+                    desc = "\n@JsonFormat(pattern = \""+fieldObject.getString("timeFormat")+"\")";
+                }
+
                 fieldDefinitions.add(MessageFormat.format(FIELD_TEMPLATE, desc, fieldType, propertyName));
             }
         }
@@ -690,6 +697,7 @@ public class JsonToJavaClassGenerator {
         // 表格
         String tableVue = struct.getFields().stream()
                 .filter(structAttr -> !structAttr.getName().equals("operatorId"))
+                .filter(structAttr -> !structAttr.getName().equals("valid"))
                 .map(JsonToJavaClassGenerator::tableVue)
                 .collect(Collectors.joining("\n"));
 
@@ -759,20 +767,11 @@ public class JsonToJavaClassGenerator {
                     "                        v-model=\"submitForm.{1}\"\n" +
                     "                        type=\"{2}\"\n" +
                     "                        placeholder=\"请选择{0}\"\n" +
+                    "                        format=\"{3}\"\n" +
+                    "                        value-format=\"{3}\"\n" +
                     "                    />"
                     + "                    </el-form-item>\n"
-                    + "                ", structAttr.getDesc(), structAttr.getName(), structAttr.dateOrTime());
-        } else if (structAttr.isDateClass()) {
-            // 日期
-            return MessageFormat.format("                \n"
-                    + "                    <el-form-item label=\"{0}\" prop=\"{1}\" :rules=\"['{' required: true, message: ''{0}是必填项'' '}']\">\n"
-                    + "                        <el-date-picker\n" +
-                    "                        v-model=\"submitForm.{1}\"\n" +
-                    "                        type=\"{2}\"\n" +
-                    "                        placeholder=\"请选择{0}\"\n" +
-                    "                    />"
-                    + "                    </el-form-item>\n"
-                    + "                ", structAttr.getDesc(), structAttr.getName(), structAttr.dateOrTime());
+                    + "                ", structAttr.getDesc(), structAttr.getName(), structAttr.dateOrTime(), structAttr.getTimeFormat().toUpperCase());
         } else if (structAttr.isFile()) {
             // 文件上传
             if (structAttr.isFileImage()) {
@@ -811,6 +810,13 @@ public class JsonToJavaClassGenerator {
                         + "                ", structAttr.getDesc(), structAttr.getName(), toUpperCamelCase(structAttr.getName()));
             }
 
+        } else if (structAttr.isDigit()) {
+            // input
+            return MessageFormat.format("                \n"
+                    + "                    <el-form-item label=\"{0}\" prop=\"{1}\" :rules=\"['{' required: true, message: ''{0}是必填项'' '}']\">\n"
+                    + "                        <el-input-number v-model=\"submitForm.{1}\" placeholder=\"请输入{0}\" />\n"
+                    + "                    </el-form-item>\n"
+                    + "                ", structAttr.getDesc(), structAttr.getName());
         }
 
         // input
@@ -923,7 +929,7 @@ public class JsonToJavaClassGenerator {
             }
         } else if (structAttr.getType().equals("String")) {
             fieldDesc = "`" + camelCaseToUnderscore(structAttr.getName()) + "` varchar(500) NOT NULL DEFAULT ''";
-        } else if (structAttr.getType().equals("LocalDateTime")) {
+        } else if (structAttr.getType().equals("LocalDateTime") || structAttr.getType().equals("LocalDate")) {
             if (structAttr.getName().equals("createTime")) {
                 fieldDesc = "`" + camelCaseToUnderscore(structAttr.getName()) + "` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP";
             } else if (structAttr.getName().equals("updateTime")) {
@@ -969,14 +975,15 @@ public class JsonToJavaClassGenerator {
     }
 
     private static String toConditionQuery(Struct struct, StructAttr structAttr) {
+        if (structAttr.isEnumClass() && structAttr.getName().equals("valid")) {
+            return MessageFormat.format(".eq({0}::get" + toUpperCamelCase(structAttr.getName()) + ", 1)", struct.getName());
+        }
         if (!structAttr.isQuery()) {
             return "";
         }
 
         // 生效中
-        if (structAttr.isEnumClass() && structAttr.getName().equals("valid")) {
-            return MessageFormat.format(".eq({0}::get" + toUpperCamelCase(structAttr.getName()) + ", 1)", struct.getName());
-        } else if (structAttr.getType().equals("int") || structAttr.getType().equals("Integer")) {
+        if (structAttr.getType().equals("int") || structAttr.getType().equals("Integer")) {
             return MessageFormat.format(".eq({0}QueryReq." + toGetMethod(structAttr.getName()) + " != 0, {1}::get" + toUpperCamelCase(structAttr.getName()) + ", {0}QueryReq." + toGetMethod(structAttr.getName()) + ")", struct.getTableName(), struct.getName());
         } else if (structAttr.getType().equals("String")) {
             // .like(StringUtils.isNotBlank(userQueryReq.getUserName()), User::getUserName, userQueryReq.getUserName())
@@ -1090,7 +1097,7 @@ public class JsonToJavaClassGenerator {
             desc = "// " + attr.getDesc();
         }
         String annotation = "";
-        if (attr.getType().equals("LocalDateTime")) {
+        if (attr.getType().equals("LocalDateTime") || attr.getType().equals("LocalDate")) {
             if (StringUtils.isNotBlank(attr.getTimeFormat())) {
                 annotation = "@JsonFormat(pattern = \"" + attr.getTimeFormat() + "\")";
             } else {
@@ -1247,7 +1254,7 @@ public class JsonToJavaClassGenerator {
 //            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/user_role.json", params);
 //            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/user.json", params);
 //            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/role.json", params);
-            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/copyright.json", params);
+            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/copyright2.json", params);
 //            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/category.json", params);
             System.out.println("Java class generated successfully!");
         } catch (IOException e) {

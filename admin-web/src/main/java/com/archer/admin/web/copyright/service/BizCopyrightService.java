@@ -31,14 +31,13 @@ public class BizCopyrightService {
         Page<Copyright> page = copyrightService.lambdaQuery()
                 
 .like(StringUtils.isNotBlank(copyrightQueryReq.getCopyrightName()), Copyright::getCopyrightName, copyrightQueryReq.getCopyrightName())
+
 .like(StringUtils.isNotBlank(copyrightQueryReq.getCpName()), Copyright::getCpName, copyrightQueryReq.getCpName())
-.eq(copyrightQueryReq.getStatus() != 0, Copyright::getStatus, copyrightQueryReq.getStatus())
 
 
 
 
-
-
+.eq(Copyright::getValid, 1)
 
                 .page(new Page<>(copyrightQueryReq.getPageNo(), copyrightQueryReq.getPageSize()));
 

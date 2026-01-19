@@ -7,6 +7,7 @@ import com.archer.admin.web.common.ValidEnum;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import lombok.Builder;
@@ -27,27 +28,24 @@ public class CopyrightTransform {
         // IP名称
 
         private String copyrightName;
+        // 海报
+
+        private String placardUrl;
         // 授权方
 
         private String cpName;
-        // 状态
-
-        private Integer status;
         // 授权到期日期
 @JsonFormat(pattern = "yyyy-MM-dd")
-        private LocalDateTime authExpireDate;
+        private LocalDate authExpireDate;
         // 授权类目
 
-        private Integer topCategoryId;
+        private String categoryIds;
         // 预留清货天数
 
         private Integer clearDays;
         // 授权书
 
         private String authUrl;
-        // 海报
-
-        private String placardUrl;
         // 状态
 
         private Integer valid;
@@ -62,23 +60,18 @@ public class CopyrightTransform {
 return CopyrightRes.builder()
         .id(copyright.getId())
 .copyrightName(copyright.getCopyrightName())
+.placardUrl(copyright.getPlacardUrl())
 .cpName(copyright.getCpName())
-.status(copyright.getStatus())
 .authExpireDate(copyright.getAuthExpireDate())
-.topCategoryId(copyright.getTopCategoryId())
+.categoryIds(copyright.getCategoryIds())
 .clearDays(copyright.getClearDays())
 .authUrl(copyright.getAuthUrl())
-.placardUrl(copyright.getPlacardUrl())
 .valid(copyright.getValid())
 .createTime(copyright.getCreateTime())
 .updateTime(copyright.getUpdateTime())
         .build();
 
     }
-public String getStatusStr() { 
- return StatusEnum.of(status).getLabel(); 
-}
-
 public String getValidStr() { 
  return ValidEnum.of(valid).getLabel(); 
 }
@@ -90,15 +83,12 @@ public static class CopyrightQueryReq extends PageReq {
         private String copyrightName;
             
         private String cpName;
-            
-        private int status;
     }
 
     @SuperBuilder
 @Getter
 public static class CopyrightQueryRes extends PageRes {
     private List<CopyrightRes> list;
-  @Default
-private List<Map<String, Object>> statuss = StatusEnum.TOTALS;
+  
   } 
 }

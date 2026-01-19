@@ -16,31 +16,16 @@
       "desc": "IP名称"
     },
     {
+      "name": "placardUrl",
+      "type": "String",
+      "desc": "海报",
+      "file": "image"
+    },
+    {
       "name": "cpName",
       "query": true,
       "type": "String",
       "desc": "授权方"
-    },
-    {
-      "name": "status",
-      "query": true,
-      "type": "Integer",
-      "desc": "状态",
-      "fullDesc": "状态。1正常；-1已到期",
-      "enumClass": true,
-      "ref": "@StatusEnum",
-      "refAttrs": [
-        {
-          "value": 1,
-          "desc": "VALID",
-          "label": "正常"
-        },
-        {
-          "value": -1,
-          "desc": "EXPIRE",
-          "label": "已到期"
-        }
-      ]
     },
     {
       "name": "authExpireDate",
@@ -50,8 +35,8 @@
       "desc": "授权到期日期"
     },
     {
-      "name": "topCategoryId",
-      "type": "Integer",
+      "name": "categoryIds",
+      "type": "String",
       "desc": "授权类目"
     },
     {
@@ -64,12 +49,6 @@
       "type": "String",
       "desc": "授权书",
       "file": "file"
-    },
-    {
-      "name": "placardUrl",
-      "type": "String",
-      "desc": "海报",
-      "file": "image"
     },
     {
       "name": "valid",

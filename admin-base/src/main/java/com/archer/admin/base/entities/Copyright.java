@@ -3,7 +3,9 @@ package com.archer.admin.base.entities;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import lombok.Data;
 
 @Data
@@ -14,20 +16,19 @@ public class Copyright {
         private Integer id;
         // IP名称
         private String copyrightName;
+        // 海报
+        private String placardUrl;
         // 授权方
         private String cpName;
-        // 状态
-        private Integer status;
-        // 授权到期日期
-        private LocalDateTime authExpireDate;
+        
+@JsonFormat(pattern = "yyyy-MM-dd")
+        private LocalDate authExpireDate;
         // 授权类目
-        private Integer topCategoryId;
+        private String categoryIds;
         // 预留清货天数
         private Integer clearDays;
         // 授权书
         private String authUrl;
-        // 海报
-        private String placardUrl;
         // 状态
         private Integer valid;
         // 创建时间
