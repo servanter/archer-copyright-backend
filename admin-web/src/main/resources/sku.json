@@ -1,0 +1,96 @@
+{
+  "name": "Sku",
+  "tableName": "sku",
+  "desc": "类目",
+  "fields": [
+    {
+      "name": "id",
+      "type": "String",
+      "primary": true,
+      "desc": "ID"
+    },
+    {
+      "name": "productId",
+      "type": "String",
+      "query": true,
+      "desc": "关联商品 ID"
+    },
+    {
+      "name": "skuCode",
+      "type": "String",
+      "query": true,
+      "desc": "SKU 货号"
+    },
+    {
+      "name": "specValueIds",
+      "type": "String",
+      "query": true,
+      "desc": "关联规格值 ID JSON"
+    },
+    {
+      "name": "price",
+      "type": "Double",
+      "desc": "SKU 独立价格"
+    },
+    {
+      "name": "totalStock",
+      "type": "Integer",
+      "desc": "总库存"
+    },
+    {
+      "name": "freezeStock",
+      "type": "Integer",
+      "desc": "冻结库存"
+    },
+    {
+      "name": "status",
+      "query": true,
+      "type": "Integer",
+      "desc": "状态",
+      "fullDesc": "状态。1已上架；-1已下架；2已售罄",
+      "enumClass": true,
+      "ref": "@StatusEnum",
+      "refAttrs": [
+        {
+          "value": 1,
+          "desc": "PUBLISH",
+          "label": "已上架"
+        },
+        {
+          "value": -1,
+          "desc": "DOWN",
+          "label": "已下架"
+        },
+        {
+          "value": 2,
+          "desc": "SALE_OUT",
+          "label": "已售罄"
+        }
+      ]
+    },
+    {
+      "name": "valid",
+      "query": false,
+      "type": "Integer",
+      "desc": "状态",
+      "enumClass": true,
+      "ref": "@com.archer.admin.web.common.ValidEnum"
+    },
+    {
+      "name": "operatorId",
+      "query": true,
+      "type": "Integer",
+      "desc": "操作人"
+    },
+    {
+      "name": "createTime",
+      "type": "LocalDateTime",
+      "desc": "创建时间"
+    },
+    {
+      "name": "updateTime",
+      "type": "LocalDateTime",
+      "desc": "修改时间"
+    }
+  ]
+}

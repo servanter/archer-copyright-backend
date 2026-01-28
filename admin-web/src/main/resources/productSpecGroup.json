@@ -1,0 +1,54 @@
+{
+  "name": "ProductSpecGroup",
+  "tableName": "product_spec_group",
+  "desc": "规格属性组",
+  "fields": [
+    {
+      "name": "id",
+      "type": "Integer",
+      "primary": true,
+      "desc": "ID"
+    },
+    {
+      "name": "productId",
+      "type": "String",
+      "query": true,
+      "desc": "商品ID"
+    },
+    {
+      "name": "specName",
+      "type": "String",
+      "query": true,
+      "desc": "规格组"
+    },
+    {
+      "name": "sort",
+      "type": "Integer",
+      "desc": "排序"
+    },
+    {
+      "name": "valid",
+      "query": false,
+      "type": "Integer",
+      "desc": "状态",
+      "enumClass": true,
+      "ref": "@com.archer.admin.web.common.ValidEnum"
+    },
+    {
+      "name": "operatorId",
+      "query": true,
+      "type": "Integer",
+      "desc": "操作人"
+    },
+    {
+      "name": "createTime",
+      "type": "LocalDateTime",
+      "desc": "创建时间"
+    },
+    {
+      "name": "updateTime",
+      "type": "LocalDateTime",
+      "desc": "修改时间"
+    }
+  ]
+}

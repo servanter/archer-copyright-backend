@@ -1,0 +1,39 @@
+{
+  "name": "RoleMenu",
+  "tableName": "role_menu",
+  "fields": [
+    {
+      "name": "id",
+      "type": "Integer",
+      "primary": true
+    },
+    {
+      "name": "roleId",
+      "query": true,
+      "type": "Integer",
+      "desc": "角色ID"
+    },
+    {
+      "name": "menuId",
+      "query": true,
+      "type": "Integer",
+      "desc": "菜单ID"
+    },
+    {
+      "name": "operatorId",
+      "query": true,
+      "type": "Integer",
+      "desc": "操作人"
+    },
+    {
+      "name": "createTime",
+      "type": "LocalDateTime",
+      "desc": "创建时间"
+    },
+    {
+      "name": "updateTime",
+      "type": "LocalDateTime",
+      "desc": "修改时间"
+    }
+  ]
+}

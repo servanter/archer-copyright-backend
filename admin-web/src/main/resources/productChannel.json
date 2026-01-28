@@ -1,0 +1,70 @@
+{
+  "name": "ProductChannel",
+  "tableName": "product_channel",
+  "desc": "商品渠道",
+  "fields": [
+    {
+      "name": "id",
+      "type": "Integer",
+      "primary": true,
+      "desc": "ID"
+    },
+    {
+      "name": "productId",
+      "type": "String",
+      "query": true,
+      "desc": "商品ID"
+    },
+     {
+      "name": "platformProductId",
+      "type": "String",
+      "query": true,
+      "desc": "平台商品ID"
+    },
+    {
+      "name": "stockStrategy",
+      "query": true,
+      "type": "Integer",
+      "desc": "库存策略",
+      "fullDesc": "库存策略。1共享库存；2独立库存",
+      "enumClass": true,
+      "ref": "@StockStrategyEnum",
+      "refAttrs": [
+        {
+          "value": 1,
+          "desc": "SHARED",
+          "label": "共享库存"
+        },
+        {
+          "value": 2,
+          "desc": "INDEPENDENT",
+          "label": "独立库存"
+        }
+      ]
+    },
+    {
+      "name": "channelId",
+      "type": "Integer",
+      "query": true,
+      "desc": "渠道ID"
+    },
+    {
+      "name": "valid",
+      "query": false,
+      "type": "Integer",
+      "desc": "状态",
+      "enumClass": true,
+      "ref": "@com.archer.admin.web.common.ValidEnum"
+    },
+    {
+      "name": "createTime",
+      "type": "LocalDateTime",
+      "desc": "创建时间"
+    },
+    {
+      "name": "updateTime",
+      "type": "LocalDateTime",
+      "desc": "修改时间"
+    }
+  ]
+}

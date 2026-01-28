@@ -1,0 +1,72 @@
+{
+  "name": "Copyright",
+  "tableName": "copyright",
+  "desc": "IP",
+  "fields": [
+    {
+      "name": "id",
+      "type": "Integer",
+      "primary": true,
+      "desc": "ID"
+    },
+    {
+      "name": "copyrightName",
+      "type": "String",
+      "query": true,
+      "desc": "IP名称"
+    },
+    {
+      "name": "placardUrl",
+      "type": "String",
+      "desc": "海报",
+      "file": "image"
+    },
+    {
+      "name": "cpName",
+      "query": true,
+      "type": "String",
+      "desc": "授权方"
+    },
+    {
+      "name": "authExpireDate",
+      "query": false,
+      "type": "LocalDate",
+      "timeFormat": "yyyy-MM-dd",
+      "desc": "授权到期日期"
+    },
+    {
+      "name": "categoryIds",
+      "type": "String",
+      "desc": "授权类目"
+    },
+    {
+      "name": "clearDays",
+      "type": "Integer",
+      "desc": "预留清货天数"
+    },
+    {
+      "name": "authUrl",
+      "type": "String",
+      "desc": "授权书",
+      "file": "file"
+    },
+    {
+      "name": "valid",
+      "query": false,
+      "type": "Integer",
+      "desc": "状态",
+      "enumClass": true,
+      "ref": "@com.archer.admin.web.common.ValidEnum"
+    },
+    {
+      "name": "createTime",
+      "type": "LocalDateTime",
+      "desc": "创建时间"
+    },
+    {
+      "name": "updateTime",
+      "type": "LocalDateTime",
+      "desc": "修改时间"
+    }
+  ]
+}

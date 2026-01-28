@@ -1,0 +1,70 @@
+{
+  "name": "ProductPic",
+  "tableName": "product_pic",
+  "desc": "商品图片",
+  "fields": [
+    {
+      "name": "id",
+      "type": "Integer",
+      "primary": true,
+      "desc": "ID"
+    },
+    {
+      "name": "productId",
+      "type": "String",
+      "query": true,
+      "desc": "活动ID"
+    },
+    {
+      "name": "fileType",
+      "type": "Integer",
+      "desc": "文件类型",
+      "query": true,
+      "fullDesc": "文件类型。1商品主图；2商品介绍",
+      "enumClass": true,
+      "ref": "@FileTypeEnum",
+      "refAttrs": [
+        {
+          "value": 1,
+          "desc": "PIC_MAIN",
+          "label": "商品主图"
+        },
+        {
+          "value": 2,
+          "desc": "PIC_INTRO",
+          "label": "商品介绍"
+        }
+      ]
+    },
+    {
+      "name": "fileName",
+      "type": "String",
+      "query": true,
+      "desc": "文件名"
+    },
+    {
+      "name": "fileUrl",
+      "type": "String",
+      "query": true,
+      "desc": "文件下载地址"
+    },
+    {
+      "name": "valid",
+      "query": false,
+      "type": "Integer",
+      "desc": "状态",
+      "enumClass": true,
+      "ref": "@com.archer.admin.web.common.ValidEnum"
+    },
+    {
+      "name": "createTime",
+      "type": "LocalDateTime",
+      "desc": "创建时间"
+    },
+    {
+      "name": "updateTime",
+      "type": "LocalDateTime",
+      "desc": "修改时间"
+    }
+  ]
+}

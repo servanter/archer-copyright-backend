@@ -1,0 +1,60 @@
+{
+  "name": "ProductSpecValue",
+  "tableName": "product_spec_value",
+  "desc": "规格属性",
+  "fields": [
+    {
+      "name": "id",
+      "type": "Integer",
+      "primary": true,
+      "desc": "ID"
+    },
+    {
+      "name": "productId",
+      "type": "String",
+      "query": true,
+      "desc": "商品ID"
+    },
+    {
+      "name": "specGroupId",
+      "type": "Integer",
+      "query": true,
+      "desc": "关联规格组 ID"
+    },
+    {
+      "name": "specValue",
+      "type": "String",
+      "query": true,
+      "desc": "规格值"
+    },
+    {
+      "name": "sort",
+      "type": "Integer",
+      "desc": "排序"
+    },
+    {
+      "name": "valid",
+      "query": false,
+      "type": "Integer",
+      "desc": "状态",
+      "enumClass": true,
+      "ref": "@com.archer.admin.web.common.ValidEnum"
+    },
+    {
+      "name": "operatorId",
+      "query": true,
+      "type": "Integer",
+      "desc": "操作人"
+    },
+    {
+      "name": "createTime",
+      "type": "LocalDateTime",
+      "desc": "创建时间"
+    },
+    {
+      "name": "updateTime",
+      "type": "LocalDateTime",
+      "desc": "修改时间"
+    }
+  ]
+}

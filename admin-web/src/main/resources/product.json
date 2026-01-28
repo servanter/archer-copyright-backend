@@ -1,0 +1,148 @@
+{
+  "name": "Product",
+  "tableName": "product",
+  "desc": "商品",
+  "fields": [
+    {
+      "name": "id",
+      "type": "String",
+      "primary": true,
+      "desc": "ID"
+    },
+    {
+      "name": "copyrightId",
+      "type": "Integer",
+      "query": true,
+      "desc": "所属IP"
+    },
+    {
+      "name": "productName",
+      "type": "String",
+      "query": true,
+      "desc": "商品名称"
+    },
+    {
+      "name": "thirdCategoryId",
+      "type": "Integer",
+      "query": true,
+      "desc": "商品类目"
+    },
+    {
+      "name": "priceType",
+      "type": "Integer",
+      "desc": "价格设定",
+      "fullDesc": "价格类型。1按固定定价；2按SKU定价",
+      "enumClass": true,
+      "ref": "@PriceTypeEnum",
+      "refAttrs": [
+        {
+          "value": 1,
+          "desc": "FIXED_PRICE",
+          "label": "按固定定价"
+        },
+        {
+          "value": 2,
+          "desc": "SKU_PRICE",
+          "label": "按SKU定价"
+        }
+      ]
+    },
+    {
+      "name": "price",
+      "type": "Double",
+      "desc": "固定价格"
+    },
+    {
+      "name": "status",
+      "type": "Integer",
+      "desc": "状态",
+      "query": true,
+      "fullDesc": "状态。1未上架；2已上架；3已下架；4自动下架；5售罄；6已下架-售罄",
+      "enumClass": true,
+      "ref": "@StatusEnum",
+      "refAttrs": [
+        {
+          "value": 1,
+          "desc": "UNLISTED",
+          "label": "未上架"
+        },
+        {
+          "value": 2,
+          "desc": "LISTED",
+          "label": "已上架"
+        },
+        {
+          "value": 3,
+          "desc": "TAKEN_OFF",
+          "label": "已下架"
+        },
+        {
+          "value": 4,
+          "desc": "AUTO_TAKEN_OFF",
+          "label": "自动下架"
+        },
+        {
+          "value": 5,
+          "desc": "SOLD_OUT",
+          "label": "售罄"
+        },
+        {
+          "value": 6,
+          "desc": "SOLD_OUT_TAKEN_OFF",
+          "label": "已下架-售罄"
+        }
+      ]
+    },
+    {
+      "name": "saleStatus",
+      "type": "Integer",
+      "desc": "状态",
+      "fullDesc": "状态。1现货；2预售",
+      "enumClass": true,
+      "ref": "@SaleStatusEnum",
+      "refAttrs": [
+        {
+          "value": 1,
+          "desc": "IN_STOCK",
+          "label": "现货"
+        },
+        {
+          "value": 2,
+          "desc": "PRE_SALE",
+          "label": "预售"
+        }
+      ]
+    },
+    {
+      "name": "shippingDate",
+      "query": false,
+      "type": "LocalDate",
+      "timeFormat": "yyyy-MM-dd",
+      "desc": "预计发货日期"
+    },
+    {
+      "name": "saleChannelIds",
+      "type": "String",
+      "desc": "销售渠道"
+    },
+    {
+      "name": "valid",
+      "query": false,
+      "type": "Integer",
+      "desc": "状态",
+      "enumClass": true,
+      "ref": "@com.archer.admin.web.common.ValidEnum"
+    },
+
+    {
+      "name": "createTime",
+      "type": "LocalDateTime",
+      "desc": "创建时间"
+    },
+    {
+      "name": "updateTime",
+      "type": "LocalDateTime",
+      "desc": "修改时间"
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "name": "Category",
+  "tableName": "category",
+  "desc": "类目",
+  "fields": [
+    {
+      "name": "id",
+      "type": "Integer",
+      "primary": true,
+      "desc": "ID"
+    },
+    {
+      "name": "categoryName",
+      "type": "String",
+      "query": true,
+      "desc": "类目名称"
+    },
+    {
+      "name": "topCategoryId",
+      "type": "Integer",
+      "desc": "一级类目ID"
+    },
+    {
+      "name": "secondCategoryId",
+      "type": "Integer",
+      "desc": "二级类目ID"
+    },
+    {
+      "name": "thirdCategoryId",
+      "type": "Integer",
+      "desc": "三级类目ID"
+    },
+    {
+      "name": "status",
+      "query": true,
+      "type": "Integer",
+      "desc": "状态",
+      "fullDesc": "状态。1已上架；-1未上架",
+      "enumClass": true,
+      "ref": "@StatusEnum",
+      "refAttrs": [
+        {
+          "value": 1,
+          "desc": "PUBLISH",
+          "label": "已上架"
+        },
+        {
+          "value": -1,
+          "desc": "UNPUBLISH",
+          "label": "未上架"
+        }
+      ]
+    },
+    {
+      "name": "valid",
+      "query": false,
+      "type": "Integer",
+      "desc": "状态",
+      "enumClass": true,
+      "ref": "@com.archer.admin.web.common.ValidEnum"
+    },
+    {
+      "name": "createTime",
+      "type": "LocalDateTime",
+      "desc": "创建时间"
+    },
+    {
+      "name": "updateTime",
+      "type": "LocalDateTime",
+      "desc": "修改时间"
+    }
+  ]
+}
