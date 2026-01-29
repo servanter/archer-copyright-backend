@@ -14,6 +14,8 @@ public class Sku {
     @TableId(type = IdType.AUTO)
         // ID
         private String id;
+        // SKU 名称
+        private String name;
         // 关联商品 ID
         private String productId;
         // SKU 货号

@@ -210,6 +210,7 @@ public class ProductTransform {
     @Builder
     @Getter
     public static class ProductChannelConfigRes {
+        private int id;
         private int channelId;
         private String channelName;
         private String platformProductId;
@@ -219,7 +220,8 @@ public class ProductTransform {
     @Builder
     @Getter
     public static class ProductChannelSkuConfigRes {
-        private String id;
+        private int id;
+        private String skuId;
         private String specCombination;
         private int shareNum;
         private int lockNum;
@@ -240,16 +242,18 @@ public class ProductTransform {
     }
 
     @Data
-    public static class SaveChannelSkuLockConfig {
+    public static class SaveProductChannelSkuConfig {
+        private int id;
         private String productId;
         private String platformProductId;
-        private int channel;
+        private int channelId;
+        private int stockStrategy;
         private List<SkuLock> sku;
     }
 
     @Data
     public static class SkuLock {
-        private String id;
+        private String skuId;
         private int lockNum;
     }
 }

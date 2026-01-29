@@ -3,6 +3,7 @@ package com.archer.admin.web.product.service;
 import com.alibaba.fastjson2.JSONArray;
 import com.archer.admin.base.entities.*;
 import com.archer.admin.base.service.*;
+import com.archer.admin.web.common.ValidEnum;
 import com.archer.admin.web.component.Result;
 import com.archer.admin.web.component.WebContext;
 import com.archer.admin.web.product.entities.ProductTransform;
@@ -14,7 +15,7 @@ import com.archer.admin.web.product.entities.ProductTransform.ProductQueryReq;
 import com.archer.admin.web.product.entities.ProductTransform.ProductQueryRes;
 import com.archer.admin.web.product.entities.ProductTransform.ProductRes;
 import com.archer.admin.web.product.entities.ProductTransform.ProductSpecAttrRes;
-import com.archer.admin.web.product.entities.ProductTransform.SaveChannelSkuLockConfig;
+import com.archer.admin.web.product.entities.ProductTransform.SaveProductChannelSkuConfig;
 import com.archer.admin.web.product.entities.ProductTransform.SaveProductChannelConfig;
 import com.archer.admin.web.product.entities.ProductTransform.SkuTransform;
 import com.archer.admin.web.productchannel.entities.StockStrategyEnum;
@@ -30,6 +31,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -37,6 +39,7 @@ import javax.annotation.Resource;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.checkerframework.checker.nullness.Opt;
 import org.checkerframework.checker.units.qual.g;
 import org.springframework.stereotype.Component;
 
@@ -426,22 +429,30 @@ public class BizProductService {
     }
 
     public List<ProductChannelConfigRes> queryProductChannelConfigList(WebContext webContext, String productId) {
-        List<ProductChannel> productChannels = productChannelService.lambdaQuery()
-                .eq(ProductChannel::getProductId, productId)
+        List<Channel> channels = channelService.lambdaQuery()
+                .eq(Channel::getValid, ValidEnum.ACTIVE.getValue())
                 .list();
 
-        if (CollectionUtils.isEmpty(productChannels)) {
-            return Collections.emptyList();
-        }
+        Map<Integer, ProductChannel> productChannelMap = productChannelService.lambdaQuery()
+                .eq(ProductChannel::getProductId, productId)
+                .list().stream().collect(Collectors.toMap(ProductChannel::getChannelId, Function.identity()));
 
-        return productChannels.stream().map(productChannel -> {
-            return ProductChannelConfigRes.builder()
-                    .channelId(productChannel.getChannelId())
-                    .channelName(channelService.getById(productChannel.getChannelId()).getChannelName())
-                    .stockStrategy(StockStrategyEnum.of(productChannel.getStockStrategy()))
-                    .platformProductId(productChannel.getPlatformProductId())
+        return channels.stream().map(channel -> {
+
+            ProductChannel thisChannel = productChannelMap.get(channel.getId());
+            ProductChannelConfigRes res = ProductChannelConfigRes.builder()
+                    .id(Optional.ofNullable(thisChannel).map(ProductChannel::getId).orElse(0))
+                    .channelId(channel.getId())
+                    .channelName(channel.getChannelName())
+                    .stockStrategy(StockStrategyEnum
+                            .of(Optional.ofNullable(thisChannel).map(ProductChannel::getStockStrategy).orElse(0)))
+                    .platformProductId(
+                            Optional.ofNullable(thisChannel).map(ProductChannel::getPlatformProductId).orElse(""))
                     .build();
+
+            return res;
         }).collect(Collectors.toList());
+
     }
 
     public List<ProductChannelSkuConfigRes> queryProductChannelSkuList(WebContext webContext, String productId,
@@ -453,48 +464,56 @@ public class BizProductService {
 
         List<String> skuIds = skus.stream().map(Sku::getId).collect(Collectors.toList());
 
-        List<ProductChannelSku> productChannelSkus = productChannelSkuService.lambdaQuery()
+        Map<String, ProductChannelSku> productChannelSkus = productChannelSkuService.lambdaQuery()
                 .eq(ProductChannelSku::getProductId, productId)
                 .eq(ProductChannelSku::getChannelId, channelId)
                 .in(ProductChannelSku::getSkuId, skuIds)
-                .list();
+                .list().stream().collect(Collectors.toMap(ProductChannelSku::getSkuId, Function.identity()));
 
-        if (CollectionUtils.isEmpty(productChannelSkus)) {
-            return Collections.emptyList();
-        }
-
-        return productChannelSkus.stream().map(productChannelSku -> {
+        return skus.stream().map(sku -> {
+            ProductChannelSku productChannelSku = productChannelSkus.get(sku.getId());
             return ProductChannelSkuConfigRes.builder()
-                    .id(productChannelSku.getSkuId())
-                    .shareNum(0)
-                    .lockNum(productChannelSku.getLockNum())
-                    .surplusNum(0)
+                    .id(Optional.ofNullable(productChannelSku).map(ProductChannelSku::getId).orElse(0))
+                    .skuId(sku.getId())
+                    .shareNum(110)
+                    .lockNum(Optional.ofNullable(productChannelSku).map(ProductChannelSku::getLockNum).orElse(0))
+                    .surplusNum(11)
+                    .specCombination(sku.getName())
                     .build();
         }).collect(Collectors.toList());
     }
 
-    public Result saveProductChannelConfig(WebContext webContext, SaveProductChannelConfig saveProductChannelConfig) {
-
-        List<ProductChannel> productChannels = saveProductChannelConfig.getPlatformProducts().stream().map(config -> {
+    public Result saveChannelSkuLockConfig(WebContext webContext,
+            SaveProductChannelSkuConfig saveChannelSkuLockConfig) {
+                long count = productChannelService.lambdaQuery()
+                    .eq(ProductChannel::getPlatformProductId, saveChannelSkuLockConfig.getPlatformProductId())
+                    .count();
+        if (saveChannelSkuLockConfig.getId() > 0 || count > 0) {
+            // 删除原有数据
+            productChannelSkuService.lambdaUpdate()
+                    .eq(ProductChannelSku::getProductId, saveChannelSkuLockConfig.getProductId())
+                    .eq(ProductChannelSku::getChannelId, saveChannelSkuLockConfig.getChannelId())
+                    .eq(ProductChannelSku::getPlatformProductId, saveChannelSkuLockConfig.getPlatformProductId())
+                    .remove();
+        } else {
+            
+                // 新增数据
             ProductChannel productChannel = new ProductChannel();
-            productChannel.setProductId(saveProductChannelConfig.getProductId());
-            productChannel.setChannelId(config.getChannelId());
-            productChannel.setPlatformProductId(config.getPlatformProductId());
-            productChannel.setStockStrategy(config.getStockStrategy());
-            return productChannel;
-        }).collect(Collectors.toList());
+            productChannel.setProductId(saveChannelSkuLockConfig.getProductId());
+            productChannel.setChannelId(saveChannelSkuLockConfig.getChannelId());
+            productChannel.setPlatformProductId(saveChannelSkuLockConfig.getPlatformProductId());
+            productChannel.setStockStrategy(saveChannelSkuLockConfig.getStockStrategy());
+            productChannelService.save(productChannel);
 
-        productChannelService.saveBatch(productChannels);
-        return Result.success();
-    }
+        }
 
-    public Result saveChannelSkuLock(WebContext webContext, SaveChannelSkuLockConfig saveChannelSkuLockConfig) {
-
+        // 保存sku锁库存数据
         List<ProductChannelSku> productChannelSkus = saveChannelSkuLockConfig.getSku().stream().map(lock -> {
             ProductChannelSku productChannelSku = new ProductChannelSku();
             productChannelSku.setProductId(saveChannelSkuLockConfig.getProductId());
-            productChannelSku.setChannelId(saveChannelSkuLockConfig.getChannel());
-            productChannelSku.setSkuId(lock.getId());
+            productChannelSku.setChannelId(saveChannelSkuLockConfig.getChannelId());
+            productChannelSku.setPlatformProductId(saveChannelSkuLockConfig.getPlatformProductId());
+            productChannelSku.setSkuId(lock.getSkuId());
             productChannelSku.setLockNum(lock.getLockNum());
             return productChannelSku;
         }).collect(Collectors.toList());

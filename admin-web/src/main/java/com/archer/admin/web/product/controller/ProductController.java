@@ -11,7 +11,7 @@ import com.archer.admin.web.product.entities.ProductTransform.ProductQueryReq;
 import com.archer.admin.web.product.entities.ProductTransform.ProductQueryRes;
 import com.archer.admin.web.product.entities.ProductTransform.ProductRes;
 import com.archer.admin.web.product.entities.ProductTransform.ProductSpecAttrRes;
-import com.archer.admin.web.product.entities.ProductTransform.SaveChannelSkuLockConfig;
+import com.archer.admin.web.product.entities.ProductTransform.SaveProductChannelSkuConfig;
 import com.archer.admin.web.product.entities.ProductTransform.SaveProductChannelConfig;
 import com.archer.admin.web.product.service.BizProductService;
 
@@ -76,28 +76,43 @@ public class ProductController {
         return bizProductService.getSpecAndStock(webContext, productId);
     }
 
+    /**
+     * 获取产品渠道配置列表
+     * @param webContext
+     * @param productId
+     * @return
+     */
     @RequestMapping(value = "/queryProductChannelConfigList")
     public List<ProductChannelConfigRes> queryProductChannelConfigList(WebContext webContext,
             @RequestParam("productId") String productId) {
         return bizProductService.queryProductChannelConfigList(webContext, productId);
     }
 
+    /**
+     * 查询指定产品和渠道的SKU配置列表
+     * 
+     * @param webContext 用户上下文信息
+     * @param productId  产品ID
+     * @param channelId  渠道ID
+     * @return 产品渠道SKU配置列表
+     */
     @RequestMapping(value = "/queryProductChannelSkuList")
     public List<ProductChannelSkuConfigRes> queryProductChannelSkuList(WebContext webContext,
             @RequestParam("productId") String productId, @RequestParam("channelId") int channelId) {
         return bizProductService.queryProductChannelSkuList(webContext, productId, channelId);
     }
 
-    @RequestMapping(value = "/saveProductChannelConfig")
-    public Result saveProductChannelConfig(WebContext webContext,
-            @RequestBody SaveProductChannelConfig saveProductChannelConfig) {
-        return bizProductService.saveProductChannelConfig(webContext, saveProductChannelConfig);
-    }
-
-    @RequestMapping(value = "/saveChannelSkuLock")
+    /**
+     * 保存渠道SKU锁定配置
+     * 
+     * @param webContext               用户上下文信息
+     * @param saveChannelSkuLockConfig 渠道SKU锁定配置信息
+     * @return 操作结果
+     */
+    @RequestMapping(value = "/saveChannelSkuLockConfig")
     public Result saveChannelSkuLock(WebContext webContext,
-            @RequestBody SaveChannelSkuLockConfig saveChannelSkuLockConfig) {
-        return bizProductService.saveChannelSkuLock(webContext, saveChannelSkuLockConfig);
+            @RequestBody SaveProductChannelSkuConfig saveChannelSkuLockConfig) {
+        return bizProductService.saveChannelSkuLockConfig(webContext, saveChannelSkuLockConfig);
     }
 
 }
