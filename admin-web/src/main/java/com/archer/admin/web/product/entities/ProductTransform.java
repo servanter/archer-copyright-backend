@@ -4,10 +4,13 @@ import com.archer.admin.base.common.Page.PageReq;
 import com.archer.admin.base.common.Page.PageRes;
 import com.archer.admin.base.entities.Product;
 import com.archer.admin.base.entities.ProductPic;
+import com.archer.admin.base.entities.Sku;
 import com.archer.admin.web.common.ValidEnum;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,6 +19,7 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Data;
 import lombok.Getter;
+import lombok.experimental.Delegate;
 import lombok.experimental.SuperBuilder;
 import com.archer.admin.web.productchannel.entities.StockStrategyEnum;
 
@@ -205,6 +209,56 @@ public class ProductTransform {
         private List<Map<String, Object>> statuss = StatusEnum.TOTALS;
         @Default
         private List<Map<String, Object>> saleStatuss = SaleStatusEnum.TOTALS;
+    }
+
+    @SuperBuilder
+    @Getter
+    public static class ProductStockQueryRes extends PageRes {
+
+        private List<ProductStockRes> list;
+        @Default
+        private List<Map<String, Object>> priceTypes = PriceTypeEnum.TOTALS;
+        @Default
+        private List<Map<String, Object>> statuss = StatusEnum.TOTALS;
+        @Default
+        private List<Map<String, Object>> saleStatuss = SaleStatusEnum.TOTALS;
+    }
+
+    @Getter
+    @Builder
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static class ProductStockRes {
+
+        @Delegate
+        @JsonIgnore
+        private ProductRes productRes;
+
+        private int totalStock;
+
+        private int totalFreezeStock;
+
+        private int totalRemainStock;
+
+        public static ProductStockRes parseRes(Product product, String copyrightName, List<ProductPic> orDefault, List<Sku> skus) {
+            ProductRes productRes = ProductRes.parseRes(product, copyrightName, orDefault);
+            int totalStock = skus.stream()
+                    .map(Sku::getTotalStock)
+                    .reduce(Integer::sum)
+                    .orElse(0);
+            int totalFreezeStock = skus.stream()
+                    .map(Sku::getFreezeStock)
+                    .reduce(Integer::sum)
+                    .orElse(0);
+
+            int totalRemainStock = 0;
+            
+            return ProductStockRes.builder()
+                    .productRes(productRes)
+                    .totalStock(totalStock)
+                    .totalFreezeStock(totalFreezeStock)
+                    .totalRemainStock(totalRemainStock)
+                    .build();
+        }
     }
 
     @Builder

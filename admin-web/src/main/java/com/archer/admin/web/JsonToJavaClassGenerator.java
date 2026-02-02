@@ -1279,8 +1279,8 @@ public class JsonToJavaClassGenerator {
 //            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/productPic.json", params);
 //            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/productSpecGroup.json", params);
 //            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/productSpecValue.json", params);
-            // generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/sku.json", params);
-             generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/productChannel.json", params);
+            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/sku.json", params);
+            //  generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/productChannel.json", params);
 //            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/productChannelSku.json", params);
 //            generateJavaClassFromJson(currentPath + "/admin-web/src/main/resources/category.json", params);
             System.out.println("Java class generated successfully!");

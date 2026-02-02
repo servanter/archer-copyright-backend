@@ -1,6 +1,10 @@
 package com.archer.admin.web.sku.service;
 
+import com.alibaba.fastjson2.JSONArray;
+import com.archer.admin.base.entities.ProductSpecValue;
 import com.archer.admin.base.entities.Sku;
+import com.archer.admin.base.service.ProductSpecGroupService;
+import com.archer.admin.base.service.ProductSpecValueService;
 import com.archer.admin.base.service.SkuService;
 import com.archer.admin.web.component.Result;
 import com.archer.admin.web.sku.entities.SkuTransform.SkuQueryReq;
@@ -8,8 +12,12 @@ import com.archer.admin.web.sku.entities.SkuTransform.SkuQueryRes;
 import com.archer.admin.web.sku.entities.SkuTransform.SkuRes;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
+
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +26,10 @@ public class BizSkuService {
 
     @Resource
     private SkuService skuService;
+    @Resource
+    private ProductSpecGroupService productSpecGroupService;
+    @Resource
+    private ProductSpecValueService productSpecValueService;
 
     public SkuRes query(int skuId) {
         return SkuRes.parseRes(skuService.getById(skuId));
@@ -29,20 +41,38 @@ public class BizSkuService {
 
     public SkuQueryRes list(SkuQueryReq skuQueryReq) {
         Page<Sku> page = skuService.lambdaQuery()
-                
-.like(StringUtils.isNotBlank(skuQueryReq.getProductId()), Sku::getProductId, skuQueryReq.getProductId())
-.like(StringUtils.isNotBlank(skuQueryReq.getSkuCode()), Sku::getSkuCode, skuQueryReq.getSkuCode())
-.like(StringUtils.isNotBlank(skuQueryReq.getSpecValueIds()), Sku::getSpecValueIds, skuQueryReq.getSpecValueIds())
 
+                .like(StringUtils.isNotBlank(skuQueryReq.getProductId()), Sku::getProductId, skuQueryReq.getProductId())
+                .like(StringUtils.isNotBlank(skuQueryReq.getSkuCode()), Sku::getSkuCode, skuQueryReq.getSkuCode())
+                .like(StringUtils.isNotBlank(skuQueryReq.getSpecValueIds()), Sku::getSpecValueIds,
+                        skuQueryReq.getSpecValueIds())
 
-
-.eq(skuQueryReq.getStatus() != 0, Sku::getStatus, skuQueryReq.getStatus())
-.eq(Sku::getValid, 1)
-.eq(skuQueryReq.getOperatorId() != 0, Sku::getOperatorId, skuQueryReq.getOperatorId())
+                .eq(skuQueryReq.getStatus() != 0, Sku::getStatus, skuQueryReq.getStatus())
+                .eq(Sku::getValid, 1)
+                .eq(skuQueryReq.getOperatorId() != 0, Sku::getOperatorId, skuQueryReq.getOperatorId())
 
                 .page(new Page<>(skuQueryReq.getPageNo(), skuQueryReq.getPageSize()));
 
-        List<SkuRes> list = page.getRecords().stream().map(SkuRes::parseRes).collect(Collectors.toList());
+        List<String> valueIds = page.getRecords().stream()
+                .flatMap(sku -> {
+                    List<String> valuesIds = JSONArray.parseArray(sku.getSpecValueIds(), String.class);
+                    return valuesIds.stream();
+                })
+                .collect(Collectors.toList());
+
+        Map<String, ProductSpecValue> valueMap = productSpecValueService.lambdaQuery()
+                .in(CollectionUtils.isNotEmpty(valueIds), ProductSpecValue::getId, valueIds)
+                .list().stream().collect(Collectors.toMap(ProductSpecValue::getId, Function.identity()));
+
+        List<SkuRes> list = page.getRecords().stream().map(sku -> {
+            List<String> valuesIds = JSONArray.parseArray(sku.getSpecValueIds(), String.class);
+            List<ProductSpecValue> filteredValues = valuesIds.stream()
+                    .filter(valueId -> valueMap.containsKey(valueId))
+                    .map(valueId -> valueMap.get(valueId))
+                    .collect(Collectors.toList());
+            return SkuRes.parseRes(sku, filteredValues);
+        }).collect(Collectors.toList());
+
         return SkuQueryRes.builder()
                 .total(page.getTotal())
                 .totalPage(page.getPages())

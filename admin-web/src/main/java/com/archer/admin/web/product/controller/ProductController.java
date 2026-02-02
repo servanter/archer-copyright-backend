@@ -11,6 +11,7 @@ import com.archer.admin.web.product.entities.ProductTransform.ProductQueryReq;
 import com.archer.admin.web.product.entities.ProductTransform.ProductQueryRes;
 import com.archer.admin.web.product.entities.ProductTransform.ProductRes;
 import com.archer.admin.web.product.entities.ProductTransform.ProductSpecAttrRes;
+import com.archer.admin.web.product.entities.ProductTransform.ProductStockQueryRes;
 import com.archer.admin.web.product.entities.ProductTransform.SaveProductChannelSkuConfig;
 import com.archer.admin.web.product.entities.ProductTransform.SaveProductChannelConfig;
 import com.archer.admin.web.product.service.BizProductService;
@@ -50,6 +51,11 @@ public class ProductController {
         return bizProductService.list(productQueryReq);
     }
 
+    @RequestMapping("/stock/list")
+    public ProductStockQueryRes stockList(WebContext webContext, ProductQueryReq productQueryReq) {
+        return bizProductService.stockList(productQueryReq);
+    }
+
     @RequestMapping("/remove")
     public Result remove(WebContext webContext, String id) {
         return bizProductService.remove(id);
@@ -78,6 +84,7 @@ public class ProductController {
 
     /**
      * 获取产品渠道配置列表
+     * 
      * @param webContext
      * @param productId
      * @return
