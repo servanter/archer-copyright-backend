@@ -130,4 +130,17 @@ public class SkuTransform {
         @Default
         private List<Map<String, Object>> statuss = StatusEnum.TOTALS;
     }
+
+    @Data
+    public static class SquModifyStatusReq {
+        private String id;
+        private int status;
+    }
+
+    @Data
+    public static class SkuBatchModifyStockReq {
+        private String id;
+        private int operationType;
+        private int quantity;
+    }
 }

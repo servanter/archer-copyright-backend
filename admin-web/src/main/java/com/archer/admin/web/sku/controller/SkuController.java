@@ -2,10 +2,15 @@ package com.archer.admin.web.sku.controller;
 
 import com.archer.admin.base.entities.Sku;
 import com.archer.admin.web.component.Result;
+import com.archer.admin.web.sku.entities.SkuTransform.SkuBatchModifyStockReq;
 import com.archer.admin.web.sku.entities.SkuTransform.SkuQueryReq;
 import com.archer.admin.web.sku.entities.SkuTransform.SkuQueryRes;
 import com.archer.admin.web.sku.entities.SkuTransform.SkuRes;
+import com.archer.admin.web.sku.entities.SkuTransform.SquModifyStatusReq;
 import com.archer.admin.web.sku.service.BizSkuService;
+
+import java.util.List;
+
 import javax.annotation.Resource;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -46,5 +51,15 @@ public class SkuController {
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     public Result add(WebContext webContext, @RequestBody Sku sku) {
         return bizSkuService.save(sku);
+    }
+
+    @RequestMapping("/modifyStatus")
+    public Result modifyStatus(WebContext webContext, @RequestBody SquModifyStatusReq req) {
+        return bizSkuService.modifyStatus(req);
+    }
+
+    @RequestMapping("/batchModifyStock")
+    public Result batchModifyStock(WebContext webContext, @RequestBody List<SkuBatchModifyStockReq> req) {
+        return bizSkuService.batchModifyStock(req);
     }
 }

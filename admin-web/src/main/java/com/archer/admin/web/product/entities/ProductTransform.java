@@ -239,7 +239,8 @@ public class ProductTransform {
 
         private int totalRemainStock;
 
-        public static ProductStockRes parseRes(Product product, String copyrightName, List<ProductPic> orDefault, List<Sku> skus) {
+        public static ProductStockRes parseRes(Product product, String copyrightName, List<ProductPic> orDefault,
+                List<Sku> skus) {
             ProductRes productRes = ProductRes.parseRes(product, copyrightName, orDefault);
             int totalStock = skus.stream()
                     .map(Sku::getTotalStock)
@@ -251,7 +252,7 @@ public class ProductTransform {
                     .orElse(0);
 
             int totalRemainStock = 0;
-            
+
             return ProductStockRes.builder()
                     .productRes(productRes)
                     .totalStock(totalStock)
@@ -259,6 +260,17 @@ public class ProductTransform {
                     .totalRemainStock(totalRemainStock)
                     .build();
         }
+
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        public LocalDateTime getCreateTime() {
+            return this.getProductRes().createTime;
+        }
+
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        public LocalDateTime getUpdateTime() {
+            return this.getProductRes().updateTime;
+        }
+
     }
 
     @Builder

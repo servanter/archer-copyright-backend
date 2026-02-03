@@ -7,9 +7,11 @@ import com.archer.admin.base.service.ProductSpecGroupService;
 import com.archer.admin.base.service.ProductSpecValueService;
 import com.archer.admin.base.service.SkuService;
 import com.archer.admin.web.component.Result;
+import com.archer.admin.web.sku.entities.SkuTransform.SkuBatchModifyStockReq;
 import com.archer.admin.web.sku.entities.SkuTransform.SkuQueryReq;
 import com.archer.admin.web.sku.entities.SkuTransform.SkuQueryRes;
 import com.archer.admin.web.sku.entities.SkuTransform.SkuRes;
+import com.archer.admin.web.sku.entities.SkuTransform.SquModifyStatusReq;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import java.util.List;
 import java.util.Map;
@@ -89,5 +91,25 @@ public class BizSkuService {
 
     public Result save(Sku sku) {
         return skuService.save(sku) ? Result.success() : Result.error();
+    }
+
+    public Result modifyStatus(SquModifyStatusReq req) {
+        Sku sku = new Sku();
+        sku.setId(req.getId());
+        sku.setStatus(req.getStatus());
+        return skuService.updateById(sku) ? Result.success() : Result.error();
+    }
+
+    public Result batchModifyStock(List<SkuBatchModifyStockReq> req) {
+
+        req.stream().forEach(r -> {
+            Sku sku = skuService.getById(r.getId());
+            Sku updateSku = new Sku();
+            updateSku.setId(r.getId());
+            updateSku.setTotalStock(r.getOperationType() == 1 ? sku.getTotalStock() + r.getQuantity() : sku.getTotalStock() - r.getQuantity());
+            skuService.updateById(updateSku);
+        });
+        
+        return Result.success();
     }
 }
