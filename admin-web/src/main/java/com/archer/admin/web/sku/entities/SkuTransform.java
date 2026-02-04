@@ -2,8 +2,10 @@ package com.archer.admin.web.sku.entities;
 
 import com.archer.admin.base.common.Page.PageReq;
 import com.archer.admin.base.common.Page.PageRes;
+import com.archer.admin.base.entities.ProductChannel;
 import com.archer.admin.base.entities.ProductSpecValue;
 import com.archer.admin.base.entities.Sku;
+import com.archer.admin.web.channel.entities.ChannelTransform.ChannelRes;
 import com.archer.admin.web.common.ValidEnum;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -143,4 +145,34 @@ public class SkuTransform {
         private int operationType;
         private int quantity;
     }
+
+    @Data
+    public static class SkuStockDetailReq {
+        private String productId;
+    }
+
+    @Builder
+    @Getter
+    public static class SkuStockDetailRes {
+        private List<ChannelRes>  channels;
+        private List<SkuStockDetail> list;
+    }
+
+    @Builder
+    @Getter
+    public static class SkuStockDetail {
+        private String skuId;
+        private String specValues;
+        private int totalStock;
+        private List<ChannelStock> channelStocks;
+    }
+
+    @Builder
+    @Getter
+    public static class ChannelStock {
+        private int id;
+        private String name;
+        private int stock;
+    }
+
 }

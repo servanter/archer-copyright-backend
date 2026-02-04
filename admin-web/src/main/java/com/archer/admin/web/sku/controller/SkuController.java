@@ -6,6 +6,8 @@ import com.archer.admin.web.sku.entities.SkuTransform.SkuBatchModifyStockReq;
 import com.archer.admin.web.sku.entities.SkuTransform.SkuQueryReq;
 import com.archer.admin.web.sku.entities.SkuTransform.SkuQueryRes;
 import com.archer.admin.web.sku.entities.SkuTransform.SkuRes;
+import com.archer.admin.web.sku.entities.SkuTransform.SkuStockDetailReq;
+import com.archer.admin.web.sku.entities.SkuTransform.SkuStockDetailRes;
 import com.archer.admin.web.sku.entities.SkuTransform.SquModifyStatusReq;
 import com.archer.admin.web.sku.service.BizSkuService;
 
@@ -61,5 +63,10 @@ public class SkuController {
     @RequestMapping("/batchModifyStock")
     public Result batchModifyStock(WebContext webContext, @RequestBody List<SkuBatchModifyStockReq> req) {
         return bizSkuService.batchModifyStock(req);
+    }
+
+    @RequestMapping("/queryDetailStock")
+    public SkuStockDetailRes queryDetailStock(WebContext webContext, @RequestBody SkuStockDetailReq req) {
+        return bizSkuService.queryDetailStock(req);
     }
 }
