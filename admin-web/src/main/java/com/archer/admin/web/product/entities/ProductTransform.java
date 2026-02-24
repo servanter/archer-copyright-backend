@@ -261,16 +261,6 @@ public class ProductTransform {
                     .build();
         }
 
-        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-        public LocalDateTime getCreateTime() {
-            return this.getProductRes().createTime;
-        }
-
-        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-        public LocalDateTime getUpdateTime() {
-            return this.getProductRes().updateTime;
-        }
-
     }
 
     @Builder

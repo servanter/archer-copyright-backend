@@ -62,7 +62,7 @@ public class SkuController {
 
     @RequestMapping("/batchModifyStock")
     public Result batchModifyStock(WebContext webContext, @RequestBody List<SkuBatchModifyStockReq> req) {
-        return bizSkuService.batchModifyStock(req);
+        return bizSkuService.batchModifyStock(webContext, req);
     }
 
     @RequestMapping("/queryDetailStock")

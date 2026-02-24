@@ -1,0 +1,73 @@
+{
+  "name": "StockChangeLog",
+  "tableName": "stock_change_log",
+  "desc": "库存变更日志",
+  "fields": [
+    {
+      "name": "id",
+      "type": "Integer",
+      "primary": true,
+      "desc": "ID"
+    },
+    {
+      "name": "skuId",
+      "type": "String",
+      "query": true,
+      "desc": "SKU ID"
+    },
+    {
+      "name": "productId",
+      "type": "String",
+      "desc": "产品ID"
+    },
+    {
+      "name": "Stock",
+      "type": "Integer",
+      "desc": "库存数量"
+    },
+    {
+      "name": "operatorId",
+      "type": "Integer",
+      "desc": "操作人ID"
+    },
+    {
+      "name": "type",
+      "query": true,
+      "type": "Integer",
+      "desc": "类型",
+      "fullDesc": "状态。1新增；-1减少",
+      "enumClass": true,
+      "ref": "@OperationTypeEnum",
+      "refAttrs": [
+        {
+          "value": 1,
+          "desc": "ADD",
+          "label": "新增"
+        },
+        {
+          "value": -1,
+          "desc": "REDUCE",
+          "label": "减少"
+        }
+      ]
+    },
+    {
+      "name": "valid",
+      "query": false,
+      "type": "Integer",
+      "desc": "状态",
+      "enumClass": true,
+      "ref": "@com.archer.admin.web.common.ValidEnum"
+    },
+    {
+      "name": "createTime",
+      "type": "LocalDateTime",
+      "desc": "创建时间"
+    },
+    {
+      "name": "updateTime",
+      "type": "LocalDateTime",
+      "desc": "修改时间"
+    }
+  ]
+}

@@ -4,13 +4,16 @@ import com.alibaba.fastjson2.JSONArray;
 import com.archer.admin.base.entities.Channel;
 import com.archer.admin.base.entities.ProductSpecValue;
 import com.archer.admin.base.entities.Sku;
+import com.archer.admin.base.entities.StockChangeLog;
 import com.archer.admin.base.service.ChannelService;
 import com.archer.admin.base.service.ProductSpecGroupService;
 import com.archer.admin.base.service.ProductSpecValueService;
 import com.archer.admin.base.service.SkuService;
+import com.archer.admin.base.service.StockChangeLogService;
 import com.archer.admin.web.channel.entities.ChannelTransform.ChannelRes;
 import com.archer.admin.web.common.ValidEnum;
 import com.archer.admin.web.component.Result;
+import com.archer.admin.web.component.WebContext;
 import com.archer.admin.web.sku.entities.SkuTransform.ChannelStock;
 import com.archer.admin.web.sku.entities.SkuTransform.SkuBatchModifyStockReq;
 import com.archer.admin.web.sku.entities.SkuTransform.SkuQueryReq;
@@ -23,6 +26,7 @@ import com.archer.admin.web.sku.entities.SkuTransform.SquModifyStatusReq;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -39,11 +43,11 @@ public class BizSkuService {
     @Resource
     private SkuService skuService;
     @Resource
-    private ProductSpecGroupService productSpecGroupService;
-    @Resource
     private ProductSpecValueService productSpecValueService;
     @Resource
     private ChannelService channelService;
+    @Resource
+    private StockChangeLogService stockChangeLogService;
 
     public SkuRes query(int skuId) {
         return SkuRes.parseRes(skuService.getById(skuId));
@@ -76,7 +80,7 @@ public class BizSkuService {
                 .build();
     }
 
-    private List<SkuRes> getSkuResList(List<Sku> skus) {
+    public List<SkuRes> getSkuResList(List<Sku> skus) {
         List<String> valueIds = skus.stream()
                 .flatMap(sku -> {
                     List<String> valuesIds = JSONArray.parseArray(sku.getSpecValueIds(), String.class);
@@ -117,16 +121,39 @@ public class BizSkuService {
         return skuService.updateById(sku) ? Result.success() : Result.error();
     }
 
-    public Result batchModifyStock(List<SkuBatchModifyStockReq> req) {
+    public Result batchModifyStock(WebContext webContext, List<SkuBatchModifyStockReq> req) {
+        
+        // 准备库存变更记录
+        List<StockChangeLog> stockChangeLogs = new ArrayList<>();
 
-        req.stream().forEach(r -> {
+        req.forEach(r -> {
             Sku sku = skuService.getById(r.getId());
             Sku updateSku = new Sku();
             updateSku.setId(r.getId());
-            updateSku.setTotalStock(r.getOperationType() == 1 ? sku.getTotalStock() + r.getQuantity()
-                    : sku.getTotalStock() - r.getQuantity());
+            
+            // 计算变更后的库存
+            int newStock = r.getOperationType() == 1 ? sku.getTotalStock() + r.getQuantity()
+                    : sku.getTotalStock() - r.getQuantity();
+            updateSku.setTotalStock(newStock);
+            
+            // 记录库存变更
+            StockChangeLog changeLog = new StockChangeLog();
+            changeLog.setSkuId(r.getId());
+            changeLog.setProductId(sku.getProductId());
+            changeLog.setStock(r.getQuantity());
+            changeLog.setType(r.getOperationType());  // 1表示增加，-1表示减少
+            changeLog.setOperatorId(webContext.getUserId());
+            changeLog.setValid(1);
+            
+            stockChangeLogs.add(changeLog);
+            
             skuService.updateById(updateSku);
         });
+        
+        // 批量保存库存变更记录
+        if (CollectionUtils.isNotEmpty(stockChangeLogs)) {
+            stockChangeLogService.saveBatch(stockChangeLogs);
+        }
 
         return Result.success();
     }
@@ -171,4 +198,5 @@ public class BizSkuService {
                 .channelStocks(channelStocks)
                 .build();
     }
+
 }
