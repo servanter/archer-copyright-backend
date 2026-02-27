@@ -175,4 +175,19 @@ public class SkuTransform {
         private int stock;
     }
 
+    @Getter
+    @Builder
+    public static class SkuStockRes {
+        private List<SkuStockInfo> list;
+    }
+
+    @Getter
+    @Builder
+    public static class SkuStockInfo {
+        private String id;
+        private String specValues;
+        private Double price;
+        private Integer stock;
+    }
+
 }

@@ -145,7 +145,6 @@ public class ProductTransform {
     public static class ProductModifyStatusReq {
 
         private String id;
-
         private int status;
     }
 
@@ -181,6 +180,8 @@ public class ProductTransform {
         private Integer stock;
 
         private Integer freezeStock;
+        
+        private String specValues;
     }
 
     @Data
@@ -311,5 +312,12 @@ public class ProductTransform {
     public static class SkuLock {
         private String skuId;
         private int lockNum;
+    }
+
+    @Getter
+    @Builder
+    public static class ProductNameRes {
+        private String id;
+        private String name;
     }
 }

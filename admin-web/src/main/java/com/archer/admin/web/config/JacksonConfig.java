@@ -32,6 +32,9 @@ public class JacksonConfig {
         // 关闭时间戳序列化（避免LocalDateTime被序列化成数字）
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
+        // 配置反序列化时忽略未知属性
+        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+
         return objectMapper;
     }
 }

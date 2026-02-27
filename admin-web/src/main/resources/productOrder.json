@@ -1,0 +1,131 @@
+{
+  "name": "ProductOrder",
+  "tableName": "product_order",
+  "desc": "产品订单",
+  "fields": [
+    {
+      "name": "id",
+      "type": "String",
+      "primary": true,
+      "desc": "ID",
+      "query": true
+    },
+    {
+      "name": "totalCount",
+      "type": "Double",
+      "desc": "总数量"
+    },
+    {
+      "name": "totalPrice",
+      "type": "Double",
+      "desc": "总价格"
+    },
+    {
+      "name": "source",
+      "query": true,
+      "type": "Integer",
+      "desc": "来源",
+      "fullDesc": "来源。1后台",
+      "enumClass": true,
+      "ref": "@SourceEnum",
+      "refAttrs": [
+        {
+          "value": 1,
+          "desc": "BACKEND",
+          "label": "后台"
+        }
+      ]
+    },
+    {
+      "name": "logisticsStatus",
+      "query": true,
+      "type": "Integer",
+      "desc": "物流状态",
+      "fullDesc": "物流状态。1待发货；2已发货；3部分发货",
+      "enumClass": true,
+      "ref": "@LogisticsStatusEnum",
+      "refAttrs": [
+        {
+          "value": 1,
+          "desc": "WAIT_DELIVERY",
+          "label": "待发货"
+        },
+        {
+          "value": 2,
+          "desc": "DELIVERED",
+          "label": "已发货"
+        },
+        {
+          "value": 3,
+          "desc": "PART_DELIVERED",
+          "label": "部分发货"
+        }
+      ]
+    },
+    {
+      "name": "purchaser",
+      "type": "String",
+      "desc": "采购方"
+    },
+    {
+      "name": "purchaseContractFile",
+      "type": "String",
+      "desc": "采购合同文件",
+      "file": "file"
+    },
+    {
+      "name": "receiver",
+      "type": "String",
+      "desc": "收件人"
+    },
+    {
+      "name": "receiverPhone",
+      "type": "String",
+      "desc": "收件人手机号"
+    },
+    {
+      "name": "receiverProvince",
+      "type": "String",
+      "desc": "收件人省份"
+    },
+        {
+      "name": "receiverCity",
+      "type": "String",
+      "desc": "收件人城市"
+    },
+        {
+      "name": "receiverArea",
+      "type": "String",
+      "desc": "收件人区域"
+    },
+    {
+      "name": "receiverAddress",
+      "type": "String",
+      "desc": "收件人地址"
+    },
+    {
+      "name": "operatorId",
+      "query": true,
+      "type": "Integer",
+      "desc": "操作人"
+    },
+    {
+      "name": "valid",
+      "query": false,
+      "type": "Integer",
+      "desc": "状态",
+      "enumClass": true,
+      "ref": "@com.archer.admin.web.common.ValidEnum"
+    },
+    {
+      "name": "createTime",
+      "type": "LocalDateTime",
+      "desc": "创建时间"
+    },
+    {
+      "name": "updateTime",
+      "type": "LocalDateTime",
+      "desc": "修改时间"
+    }
+  ]
+}

@@ -22,11 +22,14 @@ import com.archer.admin.web.sku.entities.SkuTransform.SkuRes;
 import com.archer.admin.web.sku.entities.SkuTransform.SkuStockDetail;
 import com.archer.admin.web.sku.entities.SkuTransform.SkuStockDetailReq;
 import com.archer.admin.web.sku.entities.SkuTransform.SkuStockDetailRes;
+import com.archer.admin.web.sku.entities.SkuTransform.SkuStockInfo;
+import com.archer.admin.web.sku.entities.SkuTransform.SkuStockRes;
 import com.archer.admin.web.sku.entities.SkuTransform.SquModifyStatusReq;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -122,7 +125,7 @@ public class BizSkuService {
     }
 
     public Result batchModifyStock(WebContext webContext, List<SkuBatchModifyStockReq> req) {
-        
+
         // 准备库存变更记录
         List<StockChangeLog> stockChangeLogs = new ArrayList<>();
 
@@ -130,26 +133,26 @@ public class BizSkuService {
             Sku sku = skuService.getById(r.getId());
             Sku updateSku = new Sku();
             updateSku.setId(r.getId());
-            
+
             // 计算变更后的库存
             int newStock = r.getOperationType() == 1 ? sku.getTotalStock() + r.getQuantity()
                     : sku.getTotalStock() - r.getQuantity();
             updateSku.setTotalStock(newStock);
-            
+
             // 记录库存变更
             StockChangeLog changeLog = new StockChangeLog();
             changeLog.setSkuId(r.getId());
             changeLog.setProductId(sku.getProductId());
             changeLog.setStock(r.getQuantity());
-            changeLog.setType(r.getOperationType());  // 1表示增加，-1表示减少
+            changeLog.setType(r.getOperationType()); // 1表示增加，-1表示减少
             changeLog.setOperatorId(webContext.getUserId());
             changeLog.setValid(1);
-            
+
             stockChangeLogs.add(changeLog);
-            
+
             skuService.updateById(updateSku);
         });
-        
+
         // 批量保存库存变更记录
         if (CollectionUtils.isNotEmpty(stockChangeLogs)) {
             stockChangeLogService.saveBatch(stockChangeLogs);
@@ -196,6 +199,57 @@ public class BizSkuService {
                 .specValues(list.get(0).getSpecValues())
                 .totalStock(sku.getTotalStock())
                 .channelStocks(channelStocks)
+                .build();
+    }
+
+    public SkuStockRes querySkuStock(String productId) {
+        // 获取产品的所有有效SKU
+        List<Sku> skuList = skuService.lambdaQuery()
+                .eq(Sku::getProductId, productId)
+                .eq(Sku::getValid, 1)
+                .list();
+
+        // 获取所有规格值
+        List<String> specValueIds = skuList.stream()
+                .flatMap(sku -> {
+                    List<String> valuesIds = JSONArray.parseArray(sku.getSpecValueIds(), String.class);
+                    return valuesIds.stream();
+                })
+                .collect(Collectors.toList());
+
+        final Map<String, ProductSpecValue> specValueMap;
+        if (CollectionUtils.isNotEmpty(specValueIds)) {
+            specValueMap = productSpecValueService.lambdaQuery()
+                    .in(ProductSpecValue::getId, specValueIds)
+                    .list()
+                    .stream()
+                    .collect(Collectors.toMap(ProductSpecValue::getId, v -> v));
+        } else {
+            specValueMap = new HashMap<>();
+        }
+
+        // 构建响应列表
+        List<SkuStockInfo> skuStockInfoList = new ArrayList<>();
+        for (Sku sku : skuList) {
+            // 构建规格值字符串
+            String specValues = "";
+            if (sku.getSpecValueIds() != null && !sku.getSpecValueIds().isEmpty()) {
+                List<String> valueIds = JSONArray.parseArray(sku.getSpecValueIds(), String.class);
+                specValues = valueIds.stream()
+                        .map(id -> specValueMap.get(id) != null ? specValueMap.get(id).getSpecValue() : "")
+                        .collect(Collectors.joining("，"));
+            }
+
+            skuStockInfoList.add(SkuStockInfo.builder()
+                    .id(sku.getId())
+                    .specValues(specValues)
+                    .price(sku.getPrice())
+                    .stock(20) // 按要求写死为20
+                    .build());
+        }
+
+        return SkuStockRes.builder()
+                .list(skuStockInfoList)
                 .build();
     }
 

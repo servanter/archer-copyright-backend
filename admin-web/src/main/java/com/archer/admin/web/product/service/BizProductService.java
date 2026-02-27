@@ -26,6 +26,7 @@ import com.archer.admin.web.product.entities.ProductTransform;
 import com.archer.admin.web.product.entities.ProductTransform.ProductChannelConfigRes;
 import com.archer.admin.web.product.entities.ProductTransform.ProductChannelSkuConfigRes;
 import com.archer.admin.web.product.entities.ProductTransform.ProductModifyStatusReq;
+import com.archer.admin.web.product.entities.ProductTransform.ProductNameRes;
 import com.archer.admin.web.product.entities.ProductTransform.ProductPostReq;
 import com.archer.admin.web.product.entities.ProductTransform.ProductQueryReq;
 import com.archer.admin.web.product.entities.ProductTransform.ProductQueryRes;
@@ -46,6 +47,7 @@ import com.google.common.collect.Maps;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -241,6 +243,12 @@ public class BizProductService {
                     specGroup.setOperatorId(webContext.getUserId());
                     productSpecGroupService.updateById(specGroup);
                     savedSpecGroupIds.add(specGroup.getId());
+                } else {
+                    // 如果规格组不存在，创建新的
+                    specGroup = toSepcGroup(productId, groupReq, webContext.getUserId(),
+                            sort.incrementAndGet());
+                    productSpecGroupService.save(specGroup);
+                    savedSpecGroupIds.add(specGroup.getId());
                 }
             } else {
                 // 新增
@@ -281,16 +289,14 @@ public class BizProductService {
         }
 
         // 保存或更新规格值
-        Map<String, ProductSpecGroup> specGroupMap = productSpecGroupService.lambdaQuery()
-                .eq(ProductSpecGroup::getProductId, productId)
-                .list()
-                .stream()
-                .collect(Collectors.toMap(ProductSpecGroup::getSpecName, Function.identity(),
-                        (a, b) -> a));
-
+        // 使用Map存储规格组名称和ID的映射关系
+        Map<String, String> groupNameToIdMap = Maps.newHashMap();
         for (int i = 0; i < specGroupReqs.size(); i++) {
-            ProductTransform.ProductSpecGroupTransform groupReq = specGroupReqs.get(i);
-            String groupId = savedSpecGroupIds.get(i);
+            groupNameToIdMap.put(specGroupReqs.get(i).getName(), savedSpecGroupIds.get(i));
+        }
+        
+        for (ProductTransform.ProductSpecGroupTransform groupReq : specGroupReqs) {
+            String groupId = groupNameToIdMap.get(groupReq.getName());
             groupReq.setId(groupId);
 
             if (groupReq.getValues() != null) {
@@ -304,6 +310,12 @@ public class BizProductService {
                             specValue.setSpecValue(valueReq.getName());
                             specValue.setOperatorId(webContext.getUserId());
                             productSpecValueService.updateById(specValue);
+                        } else {
+                            // 如果规格值不存在，创建新的
+                            ProductSpecValue newSpecValue = toSepcValue0(productId, groupId, valueReq,
+                                    webContext.getUserId(),
+                                    sort.incrementAndGet());
+                            productSpecValueService.save(newSpecValue);
                         }
                     } else {
                         // 新增
@@ -381,7 +393,8 @@ public class BizProductService {
     private ProductSpecValue toSepcValue0(String productId, String groupId,
             ProductTransform.ProductSpecValueTransform value, int userId, int sort) {
         ProductSpecValue productSpecValue = new ProductSpecValue();
-        productSpecValue.setId(value.getId());
+        // 对于新增的规格值，生成一个ID；对于更新的规格值，使用现有ID
+        productSpecValue.setId(StringUtils.isNotBlank(value.getId()) ? value.getId() : Utils.getRandomUuid());
         productSpecValue.setProductId(productId);
         productSpecValue.setSpecGroupId(groupId);
         productSpecValue.setSpecValue(value.getName());
@@ -432,6 +445,10 @@ public class BizProductService {
                 .eq(Sku::getProductId, productId)
                 .list();
 
+        // 创建规格值ID到名称的映射
+        Map<String, String> specValueIdToNameMap = values.stream()
+                .collect(Collectors.toMap(ProductSpecValue::getId, ProductSpecValue::getSpecValue));
+        
         // sku信息
         List<ProductTransform.SkuTransform> skuTransforms = skus.stream().map(sku -> {
             ProductTransform.SkuTransform skuTransform = new ProductTransform.SkuTransform();
@@ -440,6 +457,16 @@ public class BizProductService {
             skuTransform.setPrice(sku.getPrice());
             List<String> specValueIds = JSONArray.parseArray(sku.getSpecValueIds(), String.class);
             skuTransform.setSpecValueIds(specValueIds);
+            
+            // 根据specValueIds获取对应的specValue名称，并用中文逗号分隔
+            if (CollectionUtils.isNotEmpty(specValueIds)) {
+                List<String> specValueNames = specValueIds.stream()
+                        .map(specValueIdToNameMap::get)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
+                skuTransform.setSpecValues(String.join("，", specValueNames));
+            }
+            
             skuTransform.setStock(sku.getTotalStock());
             skuTransform.setFreezeStock(sku.getFreezeStock());
             return skuTransform;
@@ -620,6 +647,21 @@ public class BizProductService {
                 .totalPage(page.getPages())
                 .list(list)
                 .build();
+    }
+
+    public List<ProductNameRes> getProductNames() {
+        // 查询所有有效的商品
+        List<Product> products = productService.lambdaQuery()
+                .eq(Product::getValid, 1)
+                .list();
+        
+        // 转换为ProductNameRes列表
+        return products.stream()
+                .map(product -> ProductNameRes.builder()
+                        .id(product.getId())
+                        .name(product.getProductName())
+                        .build())
+                .collect(Collectors.toList());
     }
 
 }

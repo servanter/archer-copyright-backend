@@ -6,6 +6,7 @@ import com.archer.admin.web.product.entities.ProductTransform;
 import com.archer.admin.web.product.entities.ProductTransform.ProductChannelConfigRes;
 import com.archer.admin.web.product.entities.ProductTransform.ProductChannelSkuConfigRes;
 import com.archer.admin.web.product.entities.ProductTransform.ProductModifyStatusReq;
+import com.archer.admin.web.product.entities.ProductTransform.ProductNameRes;
 import com.archer.admin.web.product.entities.ProductTransform.ProductPostReq;
 import com.archer.admin.web.product.entities.ProductTransform.ProductQueryReq;
 import com.archer.admin.web.product.entities.ProductTransform.ProductQueryRes;
@@ -120,6 +121,11 @@ public class ProductController {
     public Result saveChannelSkuLock(WebContext webContext,
             @RequestBody SaveProductChannelSkuConfig saveChannelSkuLockConfig) {
         return bizProductService.saveChannelSkuLockConfig(webContext, saveChannelSkuLockConfig);
+    }
+
+    @RequestMapping("/names")
+    public List<ProductNameRes> getProductNames(WebContext webContext) {
+        return bizProductService.getProductNames();
     }
 
 }
